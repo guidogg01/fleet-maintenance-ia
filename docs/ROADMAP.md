@@ -113,8 +113,19 @@ los demás (handler, acceso a datos, pantalla, manejo de errores).
 
 ## Hito 6 — Mantenimiento preventivo
 
-- [ ] Planes por tiempo o por uso.
-- [ ] Cálculo de vencimientos y alertas.
+- [x] Planes por tiempo o por uso — CAM-40, `MaintenancePlan` +
+      `POST/GET/PATCH/DELETE /maintenance-plans` (CAM-47), asignación a
+      vehículo vía `/vehicles/{id}/maintenance-assignments` (CAM-48) y carga de
+      kilometraje vía `PATCH /vehicles/{id}/odometer` (CAM-18). Jira todavía
+      marca CAM-16/18/47/48 como "por hacer"/"pendiente a integrar" pese a
+      estar mergeado en `develop` — desactualizado, revisar con Tomás.
+- [x] Cálculo de vencimientos — `MaintenanceStatusCalculator` +
+      `GET /vehicles?view=fleet-status` (CAM-46), consumido por
+      `FleetStatusTable.tsx` en el frontend (CAM-40). Jira: mismo desfasaje
+      que arriba (CAM-17/20/46 sin transicionar).
+- [ ] Alertas (CAM-19, por email) — sin implementar todavía.
+- [ ] Vista de "próximos mantenimientos" dedicada en el frontend (CAM-21) —
+      el dato ya existe en el backend, falta la pantalla.
 
 ---
 
