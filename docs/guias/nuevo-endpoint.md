@@ -4,15 +4,14 @@ El orden importa: **primero el contrato, después el backend, después el
 frontend.** Al revés es como se llega a que la home diga "offline" durante días
 sin que nadie sepa por qué.
 
-## 1. Contrato (`docs/API.md`)
+## 1. Contrato (`../TIP - Backend/docs/api/openapi.yaml`)
 
-Antes de escribir código, anotá en `API.md`: ruta, método, parámetros, forma
-exacta del JSON de éxito con un ejemplo real, y los códigos de error con su
-forma. Si algo no está claro acá, va a estar peor en el código.
-
-Si es el primer endpoint que devuelve un error de negocio, o el primero que
-devuelve un listado, fijate en `API.md` → "Por definir": hay decisiones
-transversales (forma del error, paginación, auth) que conviene cerrar ahora.
+Antes de escribir código, anotá en `openapi.yaml`: ruta, método, parámetros,
+forma exacta del JSON de éxito con un ejemplo real, y los códigos de error con
+su forma. Si hay decisiones puntuales de la card que no entran en el spec,
+sumá un `docs/api/<CARD>-contract.md` al lado (ver `CAM-11-dvir-contract.md` o
+`CAM-43-login-contract.md` como ejemplo). Si algo no está claro acá, va a
+estar peor en el código.
 
 ## 2. Backend (`TIP - Backend`)
 
@@ -25,7 +24,7 @@ Sigue la arquitectura en capas de `backend-AGENTS.md` → "Estructura hoy"
    `CrudRepository`). Spring Data genera la implementación — no se escribe SQL
    a mano salvo que haga falta un `@Query` explícito.
 3. **DTOs** (`dto/`): `record`s de request/response con los campos de
-   `API.md`/`openapi.yaml`. No exponer la entidad JPA directamente.
+   `openapi.yaml`. No exponer la entidad JPA directamente.
 4. **Mapper** (`mapper/`): función entidad ↔ DTO.
 5. **Service** (`service/`): la lógica de negocio — llama al repository,
    aplica reglas, lanza excepciones de dominio (`exception/`) si algo no
@@ -38,12 +37,12 @@ Sigue la arquitectura en capas de `backend-AGENTS.md` → "Estructura hoy"
    ```bash
    curl -i http://localhost:8080/api/loquesea
    ```
-   Verificá que la respuesta sea **idéntica** a lo que dice `API.md`. Si no lo
-   es, corregí el código o corregí el contrato, pero que queden iguales.
+   Verificá que la respuesta sea **idéntica** a lo que dice `openapi.yaml`. Si
+   no lo es, corregí el código o corregí el contrato, pero que queden iguales.
 
 ## 3. Frontend (`TIP - Frontend`)
 
-1. Escribí el `type` de la respuesta copiando los campos de `API.md`.
+1. Escribí el `type` de la respuesta copiando los campos de `openapi.yaml`.
 2. Hacé el `fetch` contra `${API_BASE_URL}/api/...`, con `API_BASE_URL` saliendo
    de `import.meta.env.VITE_API_BASE_URL`.
 3. Manejá los tres estados: cargando, ok, error. El error también es una pantalla.

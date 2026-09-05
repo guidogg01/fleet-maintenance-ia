@@ -2,18 +2,19 @@
 
 > El código que describe este archivo vive en la carpeta hermana
 > `../TIP - Frontend`, no en este repo. Los paths de acá para abajo (`src/...`,
-> `package.json`, etc.) son relativos a esa carpeta; `docs/...` sí es relativo
-> a este repo (`fleet-maintenance-ia`), donde vive la documentación compartida.
+> `package.json`, etc.) son relativos a esa carpeta; `docs/PROJECT.md` y
+> `docs/STATE.md` sí son relativos a este repo (`fleet-maintenance-ia`).
 
-Frontend de **FleetGuard**. El contexto del sistema, el contrato de API y el
-estado de avance viven en `docs/` de este mismo repo:
+Frontend de **FleetGuard**. El contexto del sistema y el estado de avance
+viven en `docs/` de este mismo repo:
 
 - `docs/PROJECT.md` — qué es FleetGuard y por qué está así
-- `docs/API.md` — **qué endpoints existen y qué devuelven**
 - `docs/STATE.md` — en qué quedó el trabajo
 
-Están ahí y no duplicados acá a propósito: dos copias del contrato de API se
-desincronizan, y una copia desactualizada es peor que no tenerla.
+El contrato de API vive en el backend, no acá — **`../TIP - Backend/docs/api/openapi.yaml`**
+(+ el `docs/api/<CARD>-contract.md` que corresponda). No duplicado a propósito:
+dos copias del contrato se desincronizan, y una copia desactualizada es peor
+que no tenerla.
 
 ## Stack
 
@@ -60,9 +61,9 @@ defecto real vía el flujo de inspección y viéndolo aparecer en la lista.
 
 ## Reglas
 
-**Ninguna llamada a la API sin mirar `API.md` (o `docs/api/openapi.yaml` para
-CAM-11) primero.** Ruta, método y forma exacta del JSON. Un campo desalineado
-es el error que más va a pasar en este proyecto.
+**Ninguna llamada a la API sin mirar `../TIP - Backend/docs/api/openapi.yaml`
+primero.** Ruta, método y forma exacta del JSON. Un campo desalineado es el
+error que más va a pasar en este proyecto.
 
 **La URL del backend sale siempre de `import.meta.env.VITE_API_BASE_URL`**, con
 `?? 'http://localhost:8080'` como fallback (ver `services/apiClient.ts`).
@@ -96,4 +97,5 @@ El backend es `fleet-maintenance`, en la carpeta hermana `TIP - Backend`
 Spring Boot (Spring MVC + Spring Data JPA) desde el 2026-08-31 — ver
 `backend-AGENTS.md` y `docs/PROJECT.md` para el porqué del cambio de stack. Si
 necesitás un endpoint que no existe, no lo simules con datos falsos: decímelo
-y lo agregamos del lado del backend siguiendo `docs/guias/nuevo-endpoint.md`.
+y lo agregamos del lado del backend siguiendo `docs/guias/nuevo-endpoint.md`
+(de este mismo repo).

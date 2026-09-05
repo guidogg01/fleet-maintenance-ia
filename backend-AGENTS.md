@@ -2,13 +2,13 @@
 
 > El código que describe este archivo vive en la carpeta hermana
 > `../TIP - Backend`, no en este repo. Los paths de acá para abajo (`src/...`,
-> `build.gradle.kts`, etc.) son relativos a esa carpeta; `docs/...` sí es
-> relativo a este repo (`fleet-maintenance-ia`), donde vive la documentación
-> compartida.
+> `build.gradle.kts`, `docs/api/...`, etc.) son relativos a esa carpeta;
+> `docs/PROJECT.md` y `docs/STATE.md` sí son relativos a este repo
+> (`fleet-maintenance-ia`), donde vive la documentación de contexto.
 
 Backend de **FleetGuard**. Antes de escribir código leé `docs/PROJECT.md`
-(qué es el sistema y por qué está construido así) y `docs/API.md` (el contrato
-con el frontend). El estado de avance vive en `docs/STATE.md`.
+(qué es el sistema y por qué está construido así) y `../TIP - Backend/docs/api/openapi.yaml`
+(el contrato con el frontend). El estado de avance vive en `docs/STATE.md`.
 
 ## Stack
 
@@ -74,11 +74,13 @@ extra, `build.gradle.kts` agrega `-parameters` al compilador.
 (desactualizado tras esta migración, revisar antes de seguirlo al pie de la
 letra) está en `docs/guias/nuevo-endpoint.md`.
 
-**Todo endpoint nuevo se anota en `docs/API.md` en el mismo cambio.** No después.
-Es el único lugar donde el frontend ve qué existe. (CAM-11 documentó lo suyo en
-`docs/api/openapi.yaml` + `docs/api/CAM-11-dvir-contract.md` en vez de acá —
-pendiente decidir si `API.md` pasa a ser un índice que apunta a esos archivos,
-o si se vuelca todo a `API.md` de nuevo. Ver `docs/STATE.md`.)
+**Todo endpoint nuevo se documenta en `docs/api/openapi.yaml` en el mismo
+cambio.** No después. Es el único lugar donde el frontend ve qué existe —
+`docs/API.md` ya no existe, CAM-43 lo reemplazó por completo por este
+`openapi.yaml` (2026-09-05, ver `docs/PROJECT.md` en este repo para el
+porqué). Si hay decisiones puntuales de una card que no entran en el spec,
+sumá un `docs/api/<CARD>-contract.md` (ver `CAM-11-dvir-contract.md` y
+`CAM-43-login-contract.md` como ejemplos).
 
 **Nunca commitees `src/main/resources/application-local.yml`.** Tiene
 credenciales y está ignorado a propósito — reemplaza al viejo
@@ -99,4 +101,4 @@ El frontend es `fleet-maintenance-fe`, en la carpeta hermana `TIP - Frontend`
 (sus reglas están en [`frontend-AGENTS.md`](frontend-AGENTS.md)). Consume este
 backend vía `VITE_API_BASE_URL` (por defecto `http://localhost:8080`). Si
 cambiás la forma de una respuesta, el frontend se rompe en silencio: actualizá
-`docs/API.md` y decime qué hay que tocar del otro lado.
+`docs/api/openapi.yaml` y decime qué hay que tocar del otro lado.

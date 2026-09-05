@@ -71,7 +71,7 @@ sesión corta y sacan ruido de encima.
 ## Hito 1 — Decisiones transversales
 
 Baratas ahora, caras después de diez endpoints. Se cierran discutiéndolas y se
-anotan en `API.md` y `PROJECT.md`.
+anotan en `TIP - Backend/docs/api/openapi.yaml` y `PROJECT.md`.
 
 - [ ] Forma del error de la API: qué claves tiene siempre una respuesta de error.
 - [ ] Paginación de listados: si la hay, y con qué parámetros.
@@ -129,6 +129,7 @@ los demás (handler, acceso a datos, pantalla, manejo de errores).
   en capas (`controller`/`model`/`dao`), y esas capas se sumaron a Spring Boot
   el 2026-08-31 (ya no hay `Main.java`, ver `PROJECT.md`).
 - ~~**JSON a mano.**~~ Resuelto el 2026-08-31: Jackson vía Spring MVC.
-- **Contrato en markdown vs. OpenAPI, conviven los dos.** `API.md` para lo
-  viejo/pendiente, `docs/api/openapi.yaml` para CAM-11. Ver `API.md` para el
-  detalle y los disparadores de migración originales.
+- ~~**Contrato en markdown vs. OpenAPI, conviven los dos.**~~ Resuelto el
+  2026-09-05: `API.md` se eliminó, todo el contrato vive en
+  `TIP - Backend/docs/api/openapi.yaml` + un `*-contract.md` por card. Ver
+  `PROJECT.md` → "Contrato de API en OpenAPI".

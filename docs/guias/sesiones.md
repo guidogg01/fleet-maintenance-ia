@@ -104,8 +104,9 @@ los archivos son markdown plano justamente para eso.
 ## Se cargan solos en cada sesión
 
 **`CLAUDE.md`** (raíz de este repo) — el archivo que hace que todo lo demás
-funcione. Importa `docs/PROJECT.md`, `docs/STATE.md` y `docs/API.md`, y le dice
-a la IA dónde están el backend y el frontend (directorios adicionales).
+funcione. Importa `docs/PROJECT.md` y `docs/STATE.md`, y le dice a la IA dónde
+están el backend y el frontend (directorios adicionales) y dónde está el
+contrato de API (`../TIP - Backend/docs/api/openapi.yaml`, no acá).
 → *No le agregues imports.* Cada uno se paga en todas las sesiones, incluso en
 las que no lo necesitás. Lo que no hace falta siempre va como lectura a pedido.
 
@@ -125,7 +126,8 @@ parte del "por qué" es la que importa: sin motivos, las decisiones se erosionan
 → *No lo edites a mano.* Si algo está mal, corregilo en el borrador de `/cierre`,
 así el archivo y la IA quedan alineados.
 
-**`docs/API.md`** — el contrato entre backend y frontend.
+**`../TIP - Backend/docs/api/openapi.yaml`** — el contrato entre backend y
+frontend. Vive en el backend, no acá (ver `backend-AGENTS.md`).
 → *Se actualiza antes de escribir el endpoint, no después.* Es la regla que más
 tiempo ahorra en este proyecto.
 
@@ -181,7 +183,7 @@ commitear código (en `TIP - Backend`/`TIP - Frontend`) → `/cierre` → revisa
 el borrador → confirmar → commit de estado (acá).
 
 - **Empezá por el contrato, no por el código.** Todo lo que cruce backend y
-  frontend arranca en `API.md`.
+  frontend arranca en `../TIP - Backend/docs/api/openapi.yaml`.
 - **Plan mode antes de implementar cuando la tarea no es obvia.** Corregir un
   plan cuesta un párrafo; corregir una implementación cuesta una sesión.
 - **Una tarea por sesión, terminada y commiteada.** Tres cosas a medias hacen un
@@ -191,8 +193,8 @@ el borrador → confirmar → commit de estado (acá).
   frameworks" termina con tres: nadie lo decide, se van colando de a uno.
 - **Volviendo después de semanas, no arranques a codear apenas termina
   `/retomar`.** Levantá el backend, abrí el frontend, verificá que prende.
-- **Pedile que lea antes de proponer.** "Leé `API.md` y `Main.java` antes de
-  contestar" es una línea y cambia bastante lo que sale.
+- **Pedile que lea antes de proponer.** "Leé `openapi.yaml` y el controller
+  antes de contestar" es una línea y cambia bastante lo que sale.
 - **Nombrá las rutas completas.** `../TIP - Backend/src/main/java/...` o
   `../TIP - Frontend/src/App.tsx`, no rutas sueltas. Con tres repos en la misma
   sesión, la ambigüedad se paga.

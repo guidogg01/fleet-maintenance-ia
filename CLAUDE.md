@@ -10,7 +10,11 @@ El contexto general del proyecto se carga solo desde estos archivos:
 
 @docs/PROJECT.md
 @docs/STATE.md
-@docs/API.md
+
+El contrato de API vive en el propio backend, no acá: **antes de tocar
+cualquier endpoint, leé `../TIP - Backend/docs/api/openapi.yaml`** (+ el
+`docs/api/<CARD>-contract.md` de la card que corresponda, si existe). No se
+importa acá porque es específico del código, y cambia con cada endpoint.
 
 ## Los otros dos repos
 

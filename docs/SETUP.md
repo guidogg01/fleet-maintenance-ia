@@ -54,7 +54,8 @@ cd "TIP - Backend"
 
 Verificar: `curl http://localhost:8080/api/defects` tiene que devolver `[]` (o
 la lista de defectos si ya cargaste datos) sin pedir autenticación. Todavía no
-hay un endpoint de health en Spring Boot — ver `docs/API.md`.
+hay un endpoint de health en Spring Boot — ver `docs/api/openapi.yaml` en
+`TIP - Backend`.
 
 ## 5. Levantar el frontend
 
