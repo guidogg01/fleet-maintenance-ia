@@ -1,113 +1,107 @@
 # Estado — FleetGuard
 
-Última actualización: **2026-09-03**
-Se escribe con `/cierre`, siempre con confirmación de Guido. Procedimiento en
-`guias/sesiones.md`.
+Última actualización: **2026-09-05**
+Se escribe con el ritual de `docs/guias/sesiones.md`, siempre con confirmación
+de Guido.
 
 ---
 
 ## Dónde estamos
 
-Se resolvió por completo el ciclo de CAM-43/CAM-45 (Login): refinamiento del
-backlog de Jira, implementación de backend y frontend, revisión por el
-subagente `revisor` en las dos partes, y los cuatro PRs correspondientes
-abiertos en GitHub. De paso se resolvió un problema de organización de git
-que Guido señaló a mitad de sesión — `feature/guido` se había convertido en
-una rama que mezclaba la migración a Spring Boot, CAM-13 y ahora CAM-43 sin
-pushear durante varias sesiones — adoptando una convención nueva: una rama
-por card de Jira, nombrada solo con el ID.
+Toda la documentación/contexto de IA se centralizó en un repo nuevo,
+`fleet-maintenance-ia` (`TIP - IA`) — las sesiones arrancan ahí de ahora en
+más. Se reconcilió con una limpieza equivalente que Tomás hizo por su cuenta
+en CAM-43 (`docs/API.md` → `docs/api/openapi.yaml`, que se queda en el
+backend). CAM-37 (widget de defectos recientes en el panel admin) quedó
+implementado, verificado a mano y con PR abierto en los dos repos.
 
 ## En qué quedé
 
-- **Backend, rama `CAM-43`** (commit `89242ab`, pusheada,
-  [PR #4](https://github.com/Tomas-Neira-Guitera/fleet-maintenance/pull/4)
-  contra `develop`): `POST /api/auth/login` — entidad `Usuario`+`Rol`,
-  hasheo BCrypt, JWT (HS512), seed de usuarios de prueba
-  (`docs/db/seed-users.sql`), tests de `AuthService`, documentado en
-  `API.md`. El subagente `revisor` encontró y se corrigió un canal de timing
-  que permitía enumerar usuarios (contraseña incorrecta vs. usuario
-  inexistente tardaban distinto pese al mismo mensaje de error) y una
-  inconsistencia de documentación (decía HS256, firma en HS512).
-- **Backend, rama `feature/guido`** (pusheada tal cual, sin CAM-43 adentro,
-  [PR #3](https://github.com/Tomas-Neira-Guitera/fleet-maintenance/pull/3)
-  contra `develop`): infraestructura de contexto para IA (`docs/`,
-  `.claude/`, `AGENTS.md`) — sin código de aplicación, confirmado con el
-  diff real contra `develop`.
-- **Frontend, rama `CAM-45`** (commit `c8c65ca`, pusheada,
-  [PR #4](https://github.com/Tomas-Neira-Guitera/fleet-maintenance-fe/pull/4)
-  contra `develop`): pantalla de login, sesión en `localStorage`, redirect
-  por rol (chofer → flujo existente, admin → placeholder), logout, header
-  `Authorization` sumado a los servicios existentes (`X-Driver-Id` sigue
-  conviviendo sin cambios). Revisado por `revisor` sin hallazgos
-  bloqueantes.
-- **Frontend, rama `feature/guido`** (pusheada,
-  [PR #3](https://github.com/Tomas-Neira-Guitera/fleet-maintenance-fe/pull/3)
-  contra `develop`): pantalla de defectos de CAM-13 + docs de contexto.
-- **Colección de Postman**: se encontró que la colección viva en el
-  workspace de Postman del equipo ("TIP - Fleet Maintenance") estaba
-  desactualizada (endpoints de antes de la migración a Spring Boot,
-  `/api/health` y `/api/defectos`). Se reemplazó su contenido por la
-  colección completa y al día del repo (ahora incluye la carpeta Auth de
-  CAM-43) y se subió también el entorno `FleetGuard — Local`, que no
-  existía ahí.
-- **Convención de ramas nueva**: una rama por card, nombrada solo con el ID
-  de Jira (`CAM-43`, no `feature/CAM-43-...`), cortada desde `develop`.
-  Guardada en memoria para sesiones futuras.
-- Se instaló y autenticó **GitHub CLI** (`gh`) en la máquina de Guido
-  (cuenta `guidogg01`) — de acá en más los PRs se abren directo, sin pasar
-  links.
-- `.idea/misc.xml` volvió a aparecer modificado — drift de JDK de siempre,
-  no se toca.
+- **`fleet-maintenance-ia`** (rama `master`, pusheada, sin PR — repo nuevo,
+  solo de Guido por ahora): migración completa de `docs/` (PROJECT, STATE,
+  ROADMAP, SETUP, guías), los dos `AGENTS.md` (como `backend-AGENTS.md` /
+  `frontend-AGENTS.md`) y `.claude/` (comandos, subagente `revisor`) desde
+  el backend. Reconciliado con lo de Tomás: `docs/api/` y `docs/db/` se
+  quedan en el backend (especificación versionada con el código, no
+  contexto de sesión). `ROADMAP.md` actualizado con lo que CAM-40 ya
+  entregó en silencio (ver más abajo, Jira desactualizado).
+- **Backend, rama `chore/mover-docs-ia`**
+  ([PR #6](https://github.com/Tomas-Neira-Guitera/fleet-maintenance/pull/6)
+  contra `develop`): termina de sacar `docs/PROJECT.md`/`ROADMAP.md`/
+  `SETUP.md`, que Tomás no había tocado en su propia limpieza.
+- **Backend, rama `CAM-37`** (commit `6f80f7d`, pusheada,
+  [PR #7](https://github.com/Tomas-Neira-Guitera/fleet-maintenance/pull/7)
+  contra `develop`): agrega `reportedBy` a `GET /api/defects` (`DefectDto`,
+  `DefectMapper`, `openapi.yaml`), resuelto desde `Inspection.driverName`
+  sin queries extra. Tests actualizados (`DefectServiceTest`) y nuevos
+  (`DefectMapperTest`).
+- **Frontend, rama `chore/mover-docs-ia`**
+  ([PR #6](https://github.com/Tomas-Neira-Guitera/fleet-maintenance-fe/pull/6)
+  contra `develop`): saca `AGENTS.md`/`CLAUDE.md`.
+- **Frontend, rama `CAM-37`** (commit `e167320`, pusheada,
+  [PR #7](https://github.com/Tomas-Neira-Guitera/fleet-maintenance-fe/pull/7)
+  contra `develop`): widget "Defectos abiertos recientes" en el panel admin
+  (`RecentDefectsCard`, `SeverityBadge` compartido con `DefectsList`,
+  `utils/relativeTime.ts`), con botón "← Volver" mínimo para admin.
+  Verificado end-to-end a mano (inspección real → defecto → widget → "Ver
+  todos" → volver). Revisado con el agente general-purpose (`revisor` no
+  estaba disponible en esta sesión — ver Callejones sin salida) sin
+  hallazgos bloqueantes.
+- **CAM-37 en Jira** actualizada con historia de usuario + criterios de
+  aceptación, mismo formato que CAM-43. El estado pasó solo de "En
+  refinamiento" a "Pendiente a Integrar" (probablemente la integración
+  Jira-GitHub al detectar el PR, no una transición manual) — **falta
+  confirmar a simple vista que el mock de la card no se rompió** al
+  reescribir la descripción vía API.
+- Encontrado, revisando ROADMAP + backlog de Jira: **CAM-16/17/18/20/46/47/48
+  ya están hechas** (mantenimiento preventivo, dashboard de flota) gracias a
+  CAM-40, pero Jira las sigue mostrando "por hacer"/"pendiente a integrar".
+- Guido pidió no volver a poner atribución de Claude (`Co-Authored-By`,
+  "Generated with Claude Code") en commits ni PRs — aplicado desde ahora,
+  guardado en memoria.
+- `.idea/misc.xml` volvió a aparecer modificado en el backend — drift de
+  JDK de siempre, no se toca.
 
 ## Qué sigue
 
-- **Mergear los 4 PRs en orden**: primero los de `feature/guido` (#3 en
-  cada repo, son la base), después los de las cards (`CAM-43` #4 backend,
-  `CAM-45` #4 frontend) — así sus diffs quedan limpios en vez de arrastrar
-  los commits de `feature/guido`.
-- **Hablar con Tomás** sobre la convención de "una rama por card, nombrada
-  con el ID de Jira" para que sea la del equipo, no solo de Guido — es la
-  resolución parcial de la decisión abierta de "flujo de ramas/PRs formal"
-  en `PROJECT.md`.
-- **Revisar el sprint activo** ("Sprint 1 - PoC 2", terminaba el
-  2026-09-05) — decidir si el resto de las cards (CAM-20/37/40, panel
-  admin) sigue en pie o se reprograma.
-- **Proteger endpoints con el JWT real**: hoy `X-Driver-Id` sigue siendo lo
-  único que el backend valida de verdad. Decidir cuándo se reemplaza (fuera
-  de alcance explícito de CAM-43/CAM-45).
+- Arrancar **CAM-20** (dashboard de admin completo — KPIs, sidebar,
+  próximos vencimientos) en una sesión nueva, parada en `TIP - IA`.
+- Mergear los PRs de hoy: `chore/mover-docs-ia` (#6) y `CAM-37` (#7) en
+  cada repo.
+- **Hablar con Tomás** de tres cosas:
+  1. Sincronizar el estado de Jira (CAM-16/17/18/20/46/47/48 ya hechas).
+  2. Qué hacer con los PRs de `feature/guido` (#3 en cada repo, todavía
+     abiertos) — quedaron sin contenido útil, todo se mudó a
+     `fleet-maintenance-ia`.
+  3. La convención `chore/<descripción>` usada hoy para infraestructura sin
+     card de Jira, como extensión de "una rama por card".
+- Confirmar visualmente que el mock de CAM-37 en Jira sigue intacto.
+- **Proteger endpoints con el JWT real**: sigue igual, `X-Driver-Id` es lo
+  único que el backend valida de verdad hoy.
 - **CAM-23** (gestión/invitación de usuarios) queda para cuando exista el
   panel admin.
-- Consolidar `API.md` con `docs/api/openapi.yaml`.
-- Evaluar Spring Actuator como reemplazo de `GET /api/health`.
-- Repasar la cobertura de tests del backend más allá de `AuthService`
-  (controllers, `VehicleService`/`PhotoService`, mappers,
+- Repasar la cobertura de tests del backend más allá de `AuthService`/
+  `DefectService` (controllers, `VehicleService`/`PhotoService`, mappers,
   `GlobalExceptionHandler`) — sigue pendiente de sesiones anteriores.
 
 ## Decisiones abiertas
 
-- **Autenticación.** JWT decidido y funcionando para el login (HS512).
-  Sigue abierto *cuándo* se usa para proteger el resto de los endpoints
-  (reemplazo real de `X-Driver-Id`, hoy resuelto con el header temporal
-  `auth.HeaderDriverResolver`).
-- **Flujo de ramas/PRs formal.** Parcialmente resuelto esta sesión (una
-  rama por card, nombrada con el ID de Jira, cortada desde `develop`) —
-  falta consensuarlo con Tomás.
-- **Dónde van los commits de `STATE.md`** ahora que `feature/guido` está
-  pusheada (PR abierto, todavía sin mergear). La regla vieja decía "hasta
-  que se cierre la rama o Guido hable con Tomi"; pushear no es lo mismo que
-  mergear, así que sigue sin resolverse del todo. No asumir que vuelve a
-  `main`/`develop` sin confirmarlo primero.
-- **Forma del error de la API.** CAM-11 ya usa
-  `{ error: "<CÓDIGO>", message: "<texto>" }` de hecho (ver
-  `docs/api/CAM-11-dvir-contract.md` sección 6) pero falta confirmarla como
-  convención para todo el backend.
+- **Router del frontend.** Sigue sin resolverse, y ahora bloquea
+  directamente CAM-20 (sidebar de admin con varias secciones).
+- **Autenticación en el resto de endpoints.** Sin cambios — JWT solo
+  protege el login todavía (reemplazo real de `X-Driver-Id`/
+  `HeaderDriverResolver`, sigue sin fecha).
+- **PRs de `feature/guido`.** Nueva: quedaron sin contenido útil (todo se
+  mudó a `fleet-maintenance-ia`) — a decidir con Tomás si se cierran sin
+  mergear.
+- **Flujo de ramas/PRs formal.** Sigue sin consensuarse con Tomás — hoy
+  conviven "una rama por card" y, desde hoy, `chore/<descripción>` para
+  trabajo sin card.
+- **Forma del error de la API.** Sin cambios — CAM-11 ya usa
+  `{ error, message }` de hecho, falta confirmarla como convención general.
 - **Paginación.** Sigue abierta.
-- **Router del frontend.** Sigue sin elegirse, pero ahora con un motivo
-  concreto: la vista admin (sidebar multi-sección) no entra en el `useState`
-  simple actual.
 - **Modelo de datos / versionado de schema.** Sin cambios (JPA `ddl-auto`,
   sin Flyway).
-- **Consolidación de `API.md` y `openapi.yaml`.** Sin cambios.
 
 ## Callejones sin salida
 
@@ -181,6 +175,17 @@ Lo que se probó y no funcionó, con el motivo. Se agrega, no se reemplaza.
   reiniciando el proceso de cero — ahí sí confirmó que el fix andaba
   (~77-80ms en los dos casos). Ante una medición que no cierra, conviene
   matar y reiniciar el proceso antes de asumir que el código tiene un bug.
+- **2026-09-05** — El subagente `revisor` y los comandos `/retomar`/`/cierre`
+  dejan de estar disponibles apenas la sesión queda parada en una rama/
+  checkout sin `.claude/` — pasó dos veces en la misma sesión, justo después
+  de migrar `.claude/` a `fleet-maintenance-ia`. No es un bug: hay que abrir
+  la sesión siguiente parada en `TIP - IA` para que vuelvan a cargar.
+- **2026-09-05** — Editar la descripción de un ticket de Jira vía
+  `editJiraIssue` (contentFormat markdown) reescribe internamente la
+  referencia a una imagen embebida (de "archivo" a una envoltura "externa"
+  con la misma URL adentro) — no se pudo confirmar si el mock se sigue
+  viendo bien porque el navegador de la sesión no tiene login de Jira.
+  Revisar a mano antes de asumir que se rompió o que quedó bien.
 
 ## Historial
 
@@ -251,3 +256,13 @@ Una línea por sesión.
   el ID, para todo trabajo nuevo. Se instaló y autenticó GitHub CLI. Se
   abrieron 4 PRs a `develop` (2 por repo) — pendientes de merge, sugerido
   mergear primero los de `feature/guido`.
+- **2026-09-05** — Centralizada toda la documentación/contexto de IA en el
+  repo nuevo `fleet-maintenance-ia`, reconciliado con una limpieza
+  equivalente que Tomás hizo por su cuenta en CAM-43 (`API.md` →
+  `openapi.yaml`, que se queda en el backend). Revisado `ROADMAP.md` +
+  backlog de Jira, encontrado que CAM-16/17/18/20/46/47/48 ya están hechas
+  pese a que Jira dice lo contrario. Implementada, verificada a mano y
+  pusheada CAM-37 (widget de defectos recientes en panel admin) en los dos
+  repos, con PRs abiertos a `develop`. Actualizada la card de Jira de
+  CAM-37 con historia de usuario y criterios de aceptación. Guido pidió no
+  volver a poner atribución de Claude en commits/PRs — memoria actualizada.
