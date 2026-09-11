@@ -1,6 +1,6 @@
 # Estado — FleetGuard
 
-Última actualización: **2026-09-05**
+Última actualización: **2026-09-11**
 Se escribe con el ritual de `docs/guias/sesiones.md`, siempre con confirmación
 de Guido.
 
@@ -8,95 +8,87 @@ de Guido.
 
 ## Dónde estamos
 
-Toda la documentación/contexto de IA se centralizó en un repo nuevo,
-`fleet-maintenance-ia` (`TIP - IA`) — las sesiones arrancan ahí de ahora en
-más. Se reconcilió con una limpieza equivalente que Tomás hizo por su cuenta
-en CAM-43 (`docs/API.md` → `docs/api/openapi.yaml`, que se queda en el
-backend). CAM-37 (widget de defectos recientes en el panel admin) quedó
-implementado, verificado a mano y con PR abierto en los dos repos.
+El panel de administrador ya cubre casi todo el dashboard del mock
+(`docs/design/admin-dashboard-mock.png`): KPIs, estado de flota, defectos
+abiertos recientes, planes de mantenimiento y, desde hoy, un calendario para
+programar mantenimientos (por asignación, por defecto o manual), con
+navegación por menú hamburguesa. Login con JWT y sesión por rol funcionando
+en los dos flujos. Los últimos 6 días de trabajo del equipo (mayormente de
+Tomás) no habían quedado registrados acá — este bloque los reconstruye
+cruzando git, PRs de GitHub y Jira, no memoria de sesión (ver Callejones sin
+salida, 2026-09-11).
 
 ## En qué quedé
 
-- **`fleet-maintenance-ia`** (rama `master`, pusheada, sin PR — repo nuevo,
-  solo de Guido por ahora): migración completa de `docs/` (PROJECT, STATE,
-  ROADMAP, SETUP, guías), los dos `AGENTS.md` (como `backend-AGENTS.md` /
-  `frontend-AGENTS.md`) y `.claude/` (comandos, subagente `revisor`) desde
-  el backend. Reconciliado con lo de Tomás: `docs/api/` y `docs/db/` se
-  quedan en el backend (especificación versionada con el código, no
-  contexto de sesión). `ROADMAP.md` actualizado con lo que CAM-40 ya
-  entregó en silencio (ver más abajo, Jira desactualizado).
-- **Backend, rama `chore/mover-docs-ia`**
-  ([PR #6](https://github.com/Tomas-Neira-Guitera/fleet-maintenance/pull/6)
-  contra `develop`): termina de sacar `docs/PROJECT.md`/`ROADMAP.md`/
-  `SETUP.md`, que Tomás no había tocado en su propia limpieza.
-- **Backend, rama `CAM-37`** (commit `6f80f7d`, pusheada,
-  [PR #7](https://github.com/Tomas-Neira-Guitera/fleet-maintenance/pull/7)
-  contra `develop`): agrega `reportedBy` a `GET /api/defects` (`DefectDto`,
-  `DefectMapper`, `openapi.yaml`), resuelto desde `Inspection.driverName`
-  sin queries extra. Tests actualizados (`DefectServiceTest`) y nuevos
-  (`DefectMapperTest`).
-- **Frontend, rama `chore/mover-docs-ia`**
-  ([PR #6](https://github.com/Tomas-Neira-Guitera/fleet-maintenance-fe/pull/6)
-  contra `develop`): saca `AGENTS.md`/`CLAUDE.md`.
-- **Frontend, rama `CAM-37`** (commit `e167320`, pusheada,
-  [PR #7](https://github.com/Tomas-Neira-Guitera/fleet-maintenance-fe/pull/7)
-  contra `develop`): widget "Defectos abiertos recientes" en el panel admin
-  (`RecentDefectsCard`, `SeverityBadge` compartido con `DefectsList`,
-  `utils/relativeTime.ts`), con botón "← Volver" mínimo para admin.
-  Verificado end-to-end a mano (inspección real → defecto → widget → "Ver
-  todos" → volver). Revisado con el agente general-purpose (`revisor` no
-  estaba disponible en esta sesión — ver Callejones sin salida) sin
-  hallazgos bloqueantes.
-- **CAM-37 en Jira** actualizada con historia de usuario + criterios de
-  aceptación, mismo formato que CAM-43. El estado pasó solo de "En
-  refinamiento" a "Pendiente a Integrar" (probablemente la integración
-  Jira-GitHub al detectar el PR, no una transición manual) — **falta
-  confirmar a simple vista que el mock de la card no se rompió** al
-  reescribir la descripción vía API.
-- Encontrado, revisando ROADMAP + backlog de Jira: **CAM-16/17/18/20/46/47/48
-  ya están hechas** (mantenimiento preventivo, dashboard de flota) gracias a
-  CAM-40, pero Jira las sigue mostrando "por hacer"/"pendiente a integrar".
-- Guido pidió no volver a poner atribución de Claude (`Co-Authored-By`,
-  "Generated with Claude Code") en commits ni PRs — aplicado desde ahora,
-  guardado en memoria.
-- `.idea/misc.xml` volvió a aparecer modificado en el backend — drift de
+- Lo último de **Guido**: CAM-20 (dashboard admin — KPIs, tabla de estado de
+  flota, próximos vencimientos, layout de 2 columnas), mergeado a `develop`
+  en frontend el 2026-09-05, horas después de cerrar la sesión anterior —
+  quedó sin registrar hasta hoy.
+- Lo último de **Tomás**: CAM-42/CAM-50/CAM-51 (calendario de mantenimientos
+  — entidad `ScheduledMaintenance` + `ScheduledMaintenanceController`/
+  `Service`/`Repository` en el backend; `WeeklyScheduleCard`/
+  `MonthScheduleModal`/`SchedulePickerModal`/`VehicleMaintenanceModal` en el
+  frontend — programar por asignación, por defecto o manual; ver detalle
+  desde "Estado de la flota"; planificar desde "Defectos abiertos
+  recientes"), mergeado a `develop` en los dos repos **hoy, 2026-09-11**.
+  Antes, CAM-49 (separar vista chofer/admin, vehículos con defecto
+  bloqueante en estado "No disponible", menú hamburguesa de admin con
+  pestañas Resumen/Vehículos/Planes de Mantenimiento) el 2026-09-06.
+- Los working directories de código quedaron parados en ramas viejas ya
+  mergeadas: frontend en `CAM-20`, backend en `CAM-37`. Falta moverse a
+  `develop`.
+- `main` no recibió nada de esto en ninguno de los dos repos — todo vive en
+  `develop` (evidencia nueva para la decisión abierta de flujo de ramas).
+- `.idea/misc.xml` sigue apareciendo modificado en el backend — drift de
   JDK de siempre, no se toca.
 
 ## Qué sigue
 
-- Arrancar **CAM-20** (dashboard de admin completo — KPIs, sidebar,
-  próximos vencimientos) en una sesión nueva, parada en `TIP - IA`.
-- Mergear los PRs de hoy: `chore/mover-docs-ia` (#6) y `CAM-37` (#7) en
-  cada repo.
-- **Hablar con Tomás** de tres cosas:
-  1. Sincronizar el estado de Jira (CAM-16/17/18/20/46/47/48 ya hechas).
-  2. Qué hacer con los PRs de `feature/guido` (#3 en cada repo, todavía
-     abiertos) — quedaron sin contenido útil, todo se mudó a
-     `fleet-maintenance-ia`.
-  3. La convención `chore/<descripción>` usada hoy para infraestructura sin
-     card de Jira, como extensión de "una rama por card".
-- Confirmar visualmente que el mock de CAM-37 en Jira sigue intacto.
+- Moverse a `develop` en los dos repos de código antes de tocar código
+  nuevo (los checkouts actuales apuntan a ramas ya mergeadas).
+- **Router del frontend**: con el menú hamburguesa de CAM-49 ya mostrando
+  pestañas placeholder ("Vehículos", "Planes de Mantenimiento" →
+  "Próximamente"), dejó de ser una decisión teórica.
+- **CAM-23** (gestión de usuarios y roles) — antes esperaba a que existiera
+  el panel admin; ahora existe, es candidata a arrancar.
+- Confirmar con Tomás si **CAM-21** ("Vista de próximos mantenimientos"
+  dedicada) sigue haciendo falta o ya quedó cubierta por el calendario
+  nuevo (CAM-42).
+- Backlog nuevo en Jira sin refinar: **CAM-52** (apartado de "Gastos"),
+  **CAM-53** (modal para ver foto sin salir de la página), **CAM-54**
+  (hover en menú hamburguesa).
+- **Hablar con Tomás** de lo que sigue sin resolverse de sesiones
+  anteriores: PRs de `feature/guido` (#3 en cada repo, sin contenido útil),
+  y el flujo de ramas/PRs formal.
 - **Proteger endpoints con el JWT real**: sigue igual, `X-Driver-Id` es lo
   único que el backend valida de verdad hoy.
-- **CAM-23** (gestión/invitación de usuarios) queda para cuando exista el
-  panel admin.
 - Repasar la cobertura de tests del backend más allá de `AuthService`/
   `DefectService` (controllers, `VehicleService`/`PhotoService`, mappers,
-  `GlobalExceptionHandler`) — sigue pendiente de sesiones anteriores.
+  `GlobalExceptionHandler`, y ahora `ScheduledMaintenanceService`) — sigue
+  pendiente de sesiones anteriores.
 
 ## Decisiones abiertas
 
-- **Router del frontend.** Sigue sin resolverse, y ahora bloquea
-  directamente CAM-20 (sidebar de admin con varias secciones).
+- **Router del frontend.** Ahora bloquea directamente la navegación real
+  del menú de CAM-49 (hoy son pestañas "Próximamente").
 - **Autenticación en el resto de endpoints.** Sin cambios — JWT solo
   protege el login todavía (reemplazo real de `X-Driver-Id`/
   `HeaderDriverResolver`, sigue sin fecha).
-- **PRs de `feature/guido`.** Nueva: quedaron sin contenido útil (todo se
-  mudó a `fleet-maintenance-ia`) — a decidir con Tomás si se cierran sin
+- **PRs de `feature/guido`.** Sin cambios, siguen abiertos (#3 en cada
+  repo) sin contenido útil — a decidir con Tomás si se cierran sin
   mergear.
-- **Flujo de ramas/PRs formal.** Sigue sin consensuarse con Tomás — hoy
-  conviven "una rama por card" y, desde hoy, `chore/<descripción>` para
-  trabajo sin card.
+- **Flujo de ramas/PRs formal.** Sigue sin consensuarse con Tomás —
+  evidencia nueva: CAM-20 se mergeó contra la rama `CAM-37` en vez de
+  `develop` directamente, y ningún repo promovió nada a `main` en estos
+  6 días.
+- **Nueva: cómo mantener `STATE.md` al día cuando Tomás mergea sin pasar
+  por este ritual.** El ritual de `/retomar`/`/cierre` es solo de Guido,
+  en `fleet-maintenance-ia` — Tomás no lo usa. Hoy se resuelve
+  reconstruyendo a mano contra git + PRs + Jira al abrir sesión, como se
+  hizo hoy.
+- **Nueva: CAM-21 vs. calendario nuevo.** Si CAM-42 ya cubre lo que pedía
+  CAM-21, esa card debería cerrarse o redefinirse en vez de quedar "por
+  hacer" sin uso.
 - **Forma del error de la API.** Sin cambios — CAM-11 ya usa
   `{ error, message }` de hecho, falta confirmarla como convención general.
 - **Paginación.** Sigue abierta.
@@ -186,6 +178,14 @@ Lo que se probó y no funcionó, con el motivo. Se agrega, no se reemplaza.
   con la misma URL adentro) — no se pudo confirmar si el mock se sigue
   viendo bien porque el navegador de la sesión no tiene login de Jira.
   Revisar a mano antes de asumir que se rompió o que quedó bien.
+- **2026-09-11** — `STATE.md` quedó 6 días desactualizado porque Tomás
+  mergeó CAM-49 (2026-09-06) y CAM-42/50/51 (2026-09-11) sin pasar por el
+  ritual de este repo (es solo de Guido). `/retomar` lo detectó comparando
+  el git log inyectado contra el Historial, pero hizo falta reconstruir a
+  mano con `gh pr list --state all` (en los dos repos) y una consulta JQL a
+  Jira (`project = CAM order by updated DESC`) para saber qué se había
+  hecho realmente. Si vuelve a pasar, ese es el procedimiento — no asumir
+  que "no pasó nada" solo porque no lo hizo Guido.
 
 ## Historial
 
@@ -266,3 +266,25 @@ Una línea por sesión.
   repos, con PRs abiertos a `develop`. Actualizada la card de Jira de
   CAM-37 con historia de usuario y criterios de aceptación. Guido pidió no
   volver a poner atribución de Claude en commits/PRs — memoria actualizada.
+- **2026-09-05** (continuación, sin `/cierre`) — Guido construyó y mergeó
+  CAM-20 (dashboard de admin: KPIs, tabla de estado de flota, próximos
+  vencimientos, layout de 2 columnas) en el frontend.
+- **2026-09-06** — Tomás implementó y mergeó CAM-49 (ajustes de UI: vista
+  de chofer sin pestaña de defectos, vehículos con defecto bloqueante en
+  estado "No disponible", vista de admin con menú hamburguesa y pestañas
+  Resumen/Vehículos/Planes de Mantenimiento) en el frontend.
+- **2026-09-11** — Tomás implementó y mergeó CAM-42/CAM-50/CAM-51
+  (calendario de mantenimientos: entidad `ScheduledMaintenance` +
+  endpoints en el backend, `WeeklyScheduleCard`/`MonthScheduleModal`/
+  `SchedulePickerModal`/`VehicleMaintenanceModal` en el frontend — programar
+  por asignación, por defecto o manual; ver detalle desde "Estado de la
+  flota"; planificar desde "Defectos abiertos recientes") en los dos repos.
+- **2026-09-11** — Sesión de reconciliación: detectado el desfasaje de 6
+  días entre `STATE.md` y git/Jira. Reconstruido cruzando `git log`/
+  `gh pr list` de los dos repos de código contra Jira (JQL
+  `project = CAM order by updated DESC`), sin tocar código. Confirmado que
+  CAM-16/17/18 siguen desalineadas en Jira (código ya hecho, Jira dice "por
+  hacer") — sin cambios respecto a lo ya sabido. La imagen embebida en la
+  descripción de CAM-37 en Jira sigue con la referencia rara (`blob:`/
+  "externa") detectada el 2026-09-05 — tampoco se pudo confirmar
+  visualmente esta vez (sin login de Jira en el navegador de la sesión).
