@@ -8,89 +8,97 @@ de Guido.
 
 ## Dónde estamos
 
-El panel de administrador ya cubre casi todo el dashboard del mock
-(`docs/design/admin-dashboard-mock.png`): KPIs, estado de flota, defectos
-abiertos recientes, planes de mantenimiento y, desde hoy, un calendario para
-programar mantenimientos (por asignación, por defecto o manual), con
-navegación por menú hamburguesa. Login con JWT y sesión por rol funcionando
-en los dos flujos. Los últimos 6 días de trabajo del equipo (mayormente de
-Tomás) no habían quedado registrados acá — este bloque los reconstruye
-cruzando git, PRs de GitHub y Jira, no memoria de sesión (ver Callejones sin
-salida, 2026-09-11).
+El panel de admin quedó con ABM completo de vehículos (alta/edición/baja
+lógica/reactivar, patente única, kilometraje) y de planes de mantenimiento
+(catálogo editable + asignación + "marcar como hecho", con recálculo
+automático de vencimientos y refresco en vivo entre pestañas). Dos PRs
+abiertos a `develop` (backend
+[#9](https://github.com/Tomas-Neira-Guitera/fleet-maintenance/pull/9),
+frontend
+[#11](https://github.com/Tomas-Neira-Guitera/fleet-maintenance-fe/pull/11))
+cubriendo CAM-25 y CAM-16 juntas — Tomás ya está al tanto. El test suite del
+backend sigue roto por un bug suyo pendiente (de CAM-42), lo que dejó sin
+correr el test nuevo que agregamos hoy.
 
 ## En qué quedé
 
-- Lo último de **Guido**: CAM-20 (dashboard admin — KPIs, tabla de estado de
-  flota, próximos vencimientos, layout de 2 columnas), mergeado a `develop`
-  en frontend el 2026-09-05, horas después de cerrar la sesión anterior —
-  quedó sin registrar hasta hoy.
-- Lo último de **Tomás**: CAM-42/CAM-50/CAM-51 (calendario de mantenimientos
-  — entidad `ScheduledMaintenance` + `ScheduledMaintenanceController`/
-  `Service`/`Repository` en el backend; `WeeklyScheduleCard`/
-  `MonthScheduleModal`/`SchedulePickerModal`/`VehicleMaintenanceModal` en el
-  frontend — programar por asignación, por defecto o manual; ver detalle
-  desde "Estado de la flota"; planificar desde "Defectos abiertos
-  recientes"), mergeado a `develop` en los dos repos **hoy, 2026-09-11**.
-  Antes, CAM-49 (separar vista chofer/admin, vehículos con defecto
-  bloqueante en estado "No disponible", menú hamburguesa de admin con
-  pestañas Resumen/Vehículos/Planes de Mantenimiento) el 2026-09-06.
-- Los working directories de código quedaron parados en ramas viejas ya
-  mergeadas: frontend en `CAM-20`, backend en `CAM-37`. Falta moverse a
-  `develop`.
-- `main` no recibió nada de esto en ninguno de los dos repos — todo vive en
-  `develop` (evidencia nueva para la decisión abierta de flujo de ramas).
-- `.idea/misc.xml` sigue apareciendo modificado en el backend — drift de
-  JDK de siempre, no se toca.
+- **Backend, rama `feature/CAM-25`** (commit `e4a6db7`, pusheada,
+  [PR #9](https://github.com/Tomas-Neira-Guitera/fleet-maintenance/pull/9)
+  contra `develop`): ABM de vehículos (`POST/PATCH/DELETE
+  /api/vehicles[/{id}]`, ver `docs/api/CAM-25-vehicle-abm-contract.md`) +
+  fix de `MaintenancePlan.category` (era `NOT NULL`, el contrato siempre lo
+  documentó opcional). `VehicleServiceTest` nuevo, sin correr (ver
+  Decisiones abiertas).
+- **Frontend, rama `feature/CAM-25`** (commit `1cdcb6d`, pusheada,
+  [PR #11](https://github.com/Tomas-Neira-Guitera/fleet-maintenance-fe/pull/11)
+  contra `develop`): ABM de vehículos + CAM-16 completa (migrada de
+  "Vehículos" a "Planes de Mantenimiento": asignar/desasignar planes,
+  marcar como hecho, catálogo editable) + carga de kilometraje (CAM-18).
+- Jira **CAM-16** y **CAM-25** actualizadas con historia + criterios de
+  aceptación + links a los PRs — las dos pasaron solas a "Pendiente a
+  Integrar".
+- Comentarios cruzados en los dos PRs aclarando que las dos cards van en
+  el PR de frontend, y que el de backend es solo CAM-25.
+- Guido ya le avisó a Tomás de los PRs.
+- Fix aplicado a mano en la base local de Guido (no versionado, no lo hace
+  `ddl-auto`): `ALTER TABLE maintenance_plans ALTER COLUMN category DROP
+  NOT NULL`.
+- Working directories de código parados en `feature/CAM-25` en los dos
+  repos (no en `develop`).
 
 ## Qué sigue
 
-- Moverse a `develop` en los dos repos de código antes de tocar código
-  nuevo (los checkouts actuales apuntan a ramas ya mergeadas).
-- **Router del frontend**: con el menú hamburguesa de CAM-49 ya mostrando
-  pestañas placeholder ("Vehículos", "Planes de Mantenimiento" →
-  "Próximamente"), dejó de ser una decisión teórica.
-- **CAM-23** (gestión de usuarios y roles) — antes esperaba a que existiera
-  el panel admin; ahora existe, es candidata a arrancar.
+- Revisar y mergear los PRs
+  [#9](https://github.com/Tomas-Neira-Guitera/fleet-maintenance/pull/9) y
+  [#11](https://github.com/Tomas-Neira-Guitera/fleet-maintenance-fe/pull/11).
+- Cuando Tomás arregle `DefectMapperTest`/`DefectServiceTest`: correr
+  `./gradlew build` completo y confirmar que `VehicleServiceTest` pasa.
+- Quien levante el proyecto con una base local ya creada (no fresca) va a
+  necesitar correr a mano `ALTER TABLE maintenance_plans ALTER COLUMN
+  category DROP NOT NULL` — avisarle a Tomás también.
+- CAM-16: historial visible de completions (cuántas veces se hizo un
+  mantenimiento) quedó fuera de esta entrega.
+- CAM-25: validación de formato de patente e historial de altas/bajas
+  quedaron fuera — menores.
+- **Router del frontend**: sigue pendiente, cada vez conviven más
+  pantallas con el routing manual de `App.tsx`.
+- **CAM-23** (gestión de usuarios y roles) — el panel admin ya existe, es
+  candidata a arrancar.
 - Confirmar con Tomás si **CAM-21** ("Vista de próximos mantenimientos"
   dedicada) sigue haciendo falta o ya quedó cubierta por el calendario
-  nuevo (CAM-42).
+  (CAM-42).
 - Backlog nuevo en Jira sin refinar: **CAM-52** (apartado de "Gastos"),
   **CAM-53** (modal para ver foto sin salir de la página), **CAM-54**
   (hover en menú hamburguesa).
-- **Hablar con Tomás** de lo que sigue sin resolverse de sesiones
-  anteriores: PRs de `feature/guido` (#3 en cada repo, sin contenido útil),
-  y el flujo de ramas/PRs formal.
 - **Proteger endpoints con el JWT real**: sigue igual, `X-Driver-Id` es lo
   único que el backend valida de verdad hoy.
 - Repasar la cobertura de tests del backend más allá de `AuthService`/
-  `DefectService` (controllers, `VehicleService`/`PhotoService`, mappers,
-  `GlobalExceptionHandler`, y ahora `ScheduledMaintenanceService`) — sigue
+  `DefectService`/`VehicleService` (controllers, `PhotoService`, mappers,
+  `GlobalExceptionHandler`, `ScheduledMaintenanceService`) — sigue
   pendiente de sesiones anteriores.
 
 ## Decisiones abiertas
 
-- **Router del frontend.** Ahora bloquea directamente la navegación real
-  del menú de CAM-49 (hoy son pestañas "Próximamente").
+- **Router del frontend.** Sin cambios.
 - **Autenticación en el resto de endpoints.** Sin cambios — JWT solo
-  protege el login todavía (reemplazo real de `X-Driver-Id`/
-  `HeaderDriverResolver`, sigue sin fecha).
+  protege el login todavía.
 - **PRs de `feature/guido`.** Sin cambios, siguen abiertos (#3 en cada
-  repo) sin contenido útil — a decidir con Tomás si se cierran sin
-  mergear.
-- **Flujo de ramas/PRs formal.** Sigue sin consensuarse con Tomás —
-  evidencia nueva: CAM-20 se mergeó contra la rama `CAM-37` en vez de
-  `develop` directamente, y ningún repo promovió nada a `main` en estos
-  6 días.
-- **Nueva: cómo mantener `STATE.md` al día cuando Tomás mergea sin pasar
-  por este ritual.** El ritual de `/retomar`/`/cierre` es solo de Guido,
-  en `fleet-maintenance-ia` — Tomás no lo usa. Hoy se resuelve
-  reconstruyendo a mano contra git + PRs + Jira al abrir sesión, como se
-  hizo hoy.
-- **Nueva: CAM-21 vs. calendario nuevo.** Si CAM-42 ya cubre lo que pedía
-  CAM-21, esa card debería cerrarse o redefinirse en vez de quedar "por
-  hacer" sin uso.
-- **Forma del error de la API.** Sin cambios — CAM-11 ya usa
-  `{ error, message }` de hecho, falta confirmarla como convención general.
+  repo) sin contenido útil.
+- **Flujo de ramas/PRs formal.** Parcialmente resuelto: Guido fijó
+  `feature/<CARD-ID>` como convención para sus propias ramas (antes era
+  solo el ID) — el acuerdo formal con Tomás sigue sin cerrar.
+- **Nueva: test suite del backend roto.** Bug de Tomás en
+  `DefectMapperTest`/`DefectServiceTest` (firma vieja de `DefectMapper`)
+  sigue sin arreglar — confirmado de nuevo hoy con `git fetch` +
+  recompilar, cero cambios en `origin/develop`. Bloquea correr cualquier
+  test del backend, incluido el nuevo `VehicleServiceTest`.
+- **Nueva: `ddl-auto: update` no retroactiva constraints en bases ya
+  creadas.** Ver Callejones sin salida, 2026-09-11 — cualquiera con una
+  base local vieja se va a topar con el mismo problema al traer estos PRs.
+- **Cómo mantener `STATE.md` al día cuando Tomás mergea sin pasar por este
+  ritual.** Sin cambios.
+- **CAM-21 vs. calendario nuevo.** Sin cambios.
+- **Forma del error de la API.** Sin cambios.
 - **Paginación.** Sigue abierta.
 - **Modelo de datos / versionado de schema.** Sin cambios (JPA `ddl-auto`,
   sin Flyway).
@@ -186,6 +194,28 @@ Lo que se probó y no funcionó, con el motivo. Se agrega, no se reemplaza.
   Jira (`project = CAM order by updated DESC`) para saber qué se había
   hecho realmente. Si vuelve a pasar, ese es el procedimiento — no asumir
   que "no pasó nada" solo porque no lo hizo Guido.
+- **2026-09-11** — `ddl-auto: update` no retroactiva constraints en bases
+  ya creadas. Pasó dos veces: agregar `Vehicle.active` como `NOT NULL` sin
+  `columnDefinition` con default rompió el `ALTER` en silencio (Hibernate
+  seguía de largo, la columna nunca se creaba) — se resolvió agregando el
+  default a nivel columna, mismo patrón que ya usaba `odometerKm`. Sacarle
+  `NOT NULL` a `MaintenancePlan.category` en el código tampoco lo sacó de
+  una base ya existente — hizo falta `ALTER TABLE ... DROP NOT NULL` a
+  mano. Ante un cambio de nullability en una entidad, revisar si la base
+  local ya tiene la columna creada con la constraint vieja.
+- **2026-09-11** — Un `useEffect` que solo pone `mountedRef.current = false`
+  en el cleanup (sin `= true` en el setup) queda permanentemente en
+  `false` después del doble mount/unmount que hace React 18 `StrictMode`
+  en desarrollo — un timer que chequeaba ese ref antes de actualizar
+  estado nunca volvía a dispararse. Mismo patrón que ya se usaba bien en
+  otros componentes de la sesión, acá se pasó por alto. Fix: setear
+  `true` también en el setup del efecto.
+- **2026-09-11** — `lastDoneKm`/`lastDoneDate` de una asignación de
+  mantenimiento no son señal confiable de "el mantenimiento se hizo": el
+  backend los siembra con el estado del vehículo al momento de *asignar*
+  el plan, no solo cuando se registra un completion real. Para saber si
+  un plan realmente se hizo alguna vez hace falta consultar
+  `GET .../completions` y ver si hay al menos un registro.
 
 ## Historial
 
@@ -288,3 +318,16 @@ Una línea por sesión.
   descripción de CAM-37 en Jira sigue con la referencia rara (`blob:`/
   "externa") detectada el 2026-09-05 — tampoco se pudo confirmar
   visualmente esta vez (sin login de Jira en el navegador de la sesión).
+- **2026-09-11** — CAM-25 (ABM de vehículos: alta/edición/baja
+  lógica/reactivar, patente única, bloqueo por viaje abierto) y CAM-16
+  completa (asignar/desasignar planes, marcar como hecho con recálculo,
+  catálogo de planes editable, migrada de "Vehículos" a "Planes de
+  Mantenimiento") + CAM-18 (cargar kilometraje). Todo verificado a mano
+  con `curl` y en el navegador contra el backend real. Encontrado y
+  arreglado en el camino: bug de `MaintenancePlan.category` (`NOT NULL`
+  en la entidad, opcional en el contrato). Dos PRs abiertos a `develop`
+  (backend #9, frontend #11, con comentarios cruzados aclarando el
+  reparto de las cards), Jira de las dos cards actualizada con criterios
+  de aceptación. Guido avisó a Tomás. Test suite del backend confirmado
+  que sigue roto (mismo bug de CAM-42 reportado antes), dejando
+  `VehicleServiceTest` (nuevo) sin correr.
