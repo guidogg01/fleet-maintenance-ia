@@ -1,6 +1,6 @@
 # Estado — FleetGuard
 
-Última actualización: **2026-09-11**
+Última actualización: **2026-09-16**
 Se escribe con el ritual de `docs/guias/sesiones.md`, siempre con confirmación
 de Guido.
 
@@ -8,56 +8,56 @@ de Guido.
 
 ## Dónde estamos
 
-El panel de admin quedó con ABM completo de vehículos (alta/edición/baja
-lógica/reactivar, patente única, kilometraje) y de planes de mantenimiento
-(catálogo editable + asignación + "marcar como hecho", con recálculo
-automático de vencimientos y refresco en vivo entre pestañas). Dos PRs
-abiertos a `develop` (backend
-[#9](https://github.com/Tomas-Neira-Guitera/fleet-maintenance/pull/9),
-frontend
-[#11](https://github.com/Tomas-Neira-Guitera/fleet-maintenance-fe/pull/11))
-cubriendo CAM-25 y CAM-16 juntas — Tomás ya está al tanto. El test suite del
-backend sigue roto por un bug suyo pendiente (de CAM-42), lo que dejó sin
-correr el test nuevo que agregamos hoy.
+Reconciliación confirmada contra lo que hizo Tomás: CAM-25 y CAM-16 mergeados
+a `develop` en los dos repos (PRs
+[#9](https://github.com/Tomas-Neira-Guitera/fleet-maintenance/pull/9) backend,
+[#11](https://github.com/Tomas-Neira-Guitera/fleet-maintenance-fe/pull/11)
+frontend), y el test suite del backend que estaba roto ya lo arregló Tomás.
+Se detectó, diagnosticó y arregló **CAM-61** (el calendario semanal no se
+refrescaba al planificar desde "Estado de la flota"), con PR abierto a
+`develop`.
 
 ## En qué quedé
 
-- **Backend, rama `feature/CAM-25`** (commit `e4a6db7`, pusheada,
-  [PR #9](https://github.com/Tomas-Neira-Guitera/fleet-maintenance/pull/9)
-  contra `develop`): ABM de vehículos (`POST/PATCH/DELETE
-  /api/vehicles[/{id}]`, ver `docs/api/CAM-25-vehicle-abm-contract.md`) +
-  fix de `MaintenancePlan.category` (era `NOT NULL`, el contrato siempre lo
-  documentó opcional). `VehicleServiceTest` nuevo, sin correr (ver
-  Decisiones abiertas).
-- **Frontend, rama `feature/CAM-25`** (commit `1cdcb6d`, pusheada,
-  [PR #11](https://github.com/Tomas-Neira-Guitera/fleet-maintenance-fe/pull/11)
-  contra `develop`): ABM de vehículos + CAM-16 completa (migrada de
-  "Vehículos" a "Planes de Mantenimiento": asignar/desasignar planes,
-  marcar como hecho, catálogo editable) + carga de kilometraje (CAM-18).
-- Jira **CAM-16** y **CAM-25** actualizadas con historia + criterios de
-  aceptación + links a los PRs — las dos pasaron solas a "Pendiente a
-  Integrar".
-- Comentarios cruzados en los dos PRs aclarando que las dos cards van en
-  el PR de frontend, y que el de backend es solo CAM-25.
-- Guido ya le avisó a Tomás de los PRs.
-- Fix aplicado a mano en la base local de Guido (no versionado, no lo hace
-  `ddl-auto`): `ALTER TABLE maintenance_plans ALTER COLUMN category DROP
-  NOT NULL`.
-- Working directories de código parados en `feature/CAM-25` en los dos
-  repos (no en `develop`).
+- **Frontend, rama `bugfix/CAM-61`** (commit `7de3ac3`, pusheada,
+  [PR #12](https://github.com/Tomas-Neira-Guitera/fleet-maintenance-fe/pull/12)
+  contra `develop`, esperando review de Tomás): `WeeklyScheduleCard` gana un
+  prop `refreshKey` (mismo patrón que `FleetKpiCards`/`UpcomingMaintenanceCard`),
+  conectado a `onChanged` de `VehicleMaintenanceModal`, que antes solo
+  disparaba al completar un mantenimiento y no al planificarlo.
+- **Backend**: sin cambios de código esta sesión. Working directory movido
+  de `feature/CAM-25` (ya mergeada) a `develop`.
+- Verificado a mano en el navegador contra el backend real: programar desde
+  "Estado de la flota" hace aparecer el turno en el calendario sin recargar.
+  Dato de prueba generado y limpiado (cancelado) al terminar.
+- Jira **CAM-61** actualizada con causa, fix, alcance y link al PR.
+- **CAM-57** (bug "rompe al programar desde el calendario" que reportó
+  Tomás): se revisó todo el flujo de código (frontend + backend + manejo de
+  errores) sin encontrar causa de crash real. Guido no pudo reproducirlo y
+  se lo reasignó a Tomás en Jira.
+- **Nueva convención de ramas**, confirmada explícitamente por Guido:
+  `bugfix/<CARD-ID>` para bugs (Jira "Error"), `feature/<CARD-ID>` para el
+  resto — reemplaza la convención única de `feature/<CARD-ID>` para todo.
 
 ## Qué sigue
 
-- Revisar y mergear los PRs
-  [#9](https://github.com/Tomas-Neira-Guitera/fleet-maintenance/pull/9) y
-  [#11](https://github.com/Tomas-Neira-Guitera/fleet-maintenance-fe/pull/11).
-- Cuando Tomás arregle `DefectMapperTest`/`DefectServiceTest`: correr
-  `./gradlew build` completo y confirmar que `VehicleServiceTest` pasa.
-- Quien levante el proyecto con una base local ya creada (no fresca) va a
-  necesitar correr a mano `ALTER TABLE maintenance_plans ALTER COLUMN
-  category DROP NOT NULL` — avisarle a Tomás también.
+- [PR #12](https://github.com/Tomas-Neira-Guitera/fleet-maintenance-fe/pull/12)
+  a la espera de que lo revise Tomás (no es tarea de Guido, ver Decisiones
+  abiertas / convenciones del equipo).
+- Cuando Tomás retome **CAM-57**: no tiene descripción en texto, solo una
+  captura que no se pudo ver (el navegador de la sesión no tiene login de
+  Jira).
+- Backlog nuevo del sprint sin arrancar: **CAM-58** (evaluar rediseño UI),
+  **CAM-59** (vista taller/técnico), **CAM-60** (dashboard de taller con
+  órdenes de trabajo), **CAM-62** (interno/tercerizado), **CAM-63** (sección
+  "Mantenimientos"/gastos) — CAM-60 y CAM-63 dependen de "órdenes de
+  trabajo", que todavía no existe.
+- **CAM-65** ya no es un placeholder: Guido la repurposeó como "Mejorar
+  UI/UX del calendar de planificación" (con una captura que no se pudo ver,
+  mismo problema de siempre con Jira sin login). **CAM-66** sigue como
+  comodín sin usar — ver Decisiones abiertas.
 - CAM-16: historial visible de completions (cuántas veces se hizo un
-  mantenimiento) quedó fuera de esta entrega.
+  mantenimiento) quedó fuera de su entrega original.
 - CAM-25: validación de formato de patente e historial de altas/bajas
   quedaron fuera — menores.
 - **Router del frontend**: sigue pendiente, cada vez conviven más
@@ -67,7 +67,7 @@ correr el test nuevo que agregamos hoy.
 - Confirmar con Tomás si **CAM-21** ("Vista de próximos mantenimientos"
   dedicada) sigue haciendo falta o ya quedó cubierta por el calendario
   (CAM-42).
-- Backlog nuevo en Jira sin refinar: **CAM-52** (apartado de "Gastos"),
+- Backlog viejo en Jira sin refinar: **CAM-52** (apartado de "Gastos"),
   **CAM-53** (modal para ver foto sin salir de la página), **CAM-54**
   (hover en menú hamburguesa).
 - **Proteger endpoints con el JWT real**: sigue igual, `X-Driver-Id` es lo
@@ -79,29 +79,34 @@ correr el test nuevo que agregamos hoy.
 
 ## Decisiones abiertas
 
+- **Nueva: convención `bugfix/` vs. `feature/`.** Confirmada por Guido el
+  2026-09-16 según el tipo de issue en Jira ("Error" → `bugfix/`, el resto →
+  `feature/`). Falta que Tomás la adopte — sigue siendo solo la convención
+  de Guido para sus propias ramas.
 - **Router del frontend.** Sin cambios.
 - **Autenticación en el resto de endpoints.** Sin cambios — JWT solo
   protege el login todavía.
 - **PRs de `feature/guido`.** Sin cambios, siguen abiertos (#3 en cada
   repo) sin contenido útil.
-- **Flujo de ramas/PRs formal.** Parcialmente resuelto: Guido fijó
-  `feature/<CARD-ID>` como convención para sus propias ramas (antes era
-  solo el ID) — el acuerdo formal con Tomás sigue sin cerrar.
-- **Nueva: test suite del backend roto.** Bug de Tomás en
-  `DefectMapperTest`/`DefectServiceTest` (firma vieja de `DefectMapper`)
-  sigue sin arreglar — confirmado de nuevo hoy con `git fetch` +
-  recompilar, cero cambios en `origin/develop`. Bloquea correr cualquier
-  test del backend, incluido el nuevo `VehicleServiceTest`.
-- **Nueva: `ddl-auto: update` no retroactiva constraints en bases ya
-  creadas.** Ver Callejones sin salida, 2026-09-11 — cualquiera con una
-  base local vieja se va a topar con el mismo problema al traer estos PRs.
+- **Flujo de ramas/PRs formal.** Parcialmente resuelto: además de la
+  convención de nombres, quedó confirmado que Tomás revisa/mergea los PRs
+  que salen de las sesiones de Guido por default (no Guido) — el acuerdo
+  formal completo con Tomás sigue sin cerrar.
 - **Cómo mantener `STATE.md` al día cuando Tomás mergea sin pasar por este
-  ritual.** Sin cambios.
+  ritual.** Sin cambios — el procedimiento de reconciliación (git + JQL)
+  volvió a funcionar bien esta sesión.
+- **`ddl-auto: update` no retroactiva constraints en bases ya creadas.**
+  Sin cambios.
 - **CAM-21 vs. calendario nuevo.** Sin cambios.
 - **Forma del error de la API.** Sin cambios.
 - **Paginación.** Sigue abierta.
 - **Modelo de datos / versionado de schema.** Sin cambios (JPA `ddl-auto`,
   sin Flyway).
+- **Nueva: CAM-66 ("Sarasa 2").** Sigue siendo un ticket comodín
+  pre-estimado sin repurposear — el equipo agrega estos a propósito para no
+  alterar la velocity del sprint al sumar trabajo no planeado (ver
+  Callejones sin salida). Repurposear cuando aparezca trabajo real que
+  encaje.
 
 ## Callejones sin salida
 
@@ -216,6 +221,27 @@ Lo que se probó y no funcionó, con el motivo. Se agrega, no se reemplaza.
   el plan, no solo cuando se registra un completion real. Para saber si
   un plan realmente se hizo alguna vez hace falta consultar
   `GET .../completions` y ver si hay al menos un registro.
+- **2026-09-16** — Cancelar una programación de prueba haciendo click en el
+  botón de basura del calendario, en el navegador de la sesión, dispara un
+  `window.confirm()` nativo que no se pudo confirmar visualmente (el click
+  no tuvo efecto observable). Se resolvió cancelando directo por API
+  (`PATCH /api/maintenance-schedule/{id}` con `status: cancelled`). Si hace
+  falta limpiar datos de prueba generados vía UI y hay un `confirm()` de
+  por medio, ir directo por API es más confiable que interactuar con el
+  diálogo nativo.
+- **2026-09-16** — La sesión del 2026-09-05 registró en su Historial
+  "memoria actualizada" sobre no poner atribución de Claude en commits/PRs,
+  pero el archivo de memoria correspondiente nunca se creó — el pedido se
+  repitió esta sesión (rechazando un intento de commit) sin que hubiera
+  quedado guardado la primera vez. Ante una afirmación de "ya quedó
+  guardado en memoria" en una sesión anterior, vale la pena confirmar que
+  el archivo realmente existe antes de asumirlo.
+- **2026-09-16** — Tickets de Jira con título de broma ("Sarasa 1"/"Sarasa
+  2", CAM-65/66) no son basura ni error de carga: son placeholders
+  pre-estimados a propósito, para poder sumar trabajo no planeado durante
+  el sprint sin alterar la velocity (Story Points ya comprometidos). Antes
+  de asumir que un ticket así es descartable, confirmar si ya fue
+  repurposeado (título/descripción reales) o sigue de comodín.
 
 ## Historial
 
@@ -331,3 +357,16 @@ Una línea por sesión.
   de aceptación. Guido avisó a Tomás. Test suite del backend confirmado
   que sigue roto (mismo bug de CAM-42 reportado antes), dejando
   `VehicleServiceTest` (nuevo) sin correr.
+- **2026-09-16** — Reconciliación con git/Jira: confirmados mergeados los
+  PRs #9/#11 de CAM-25/CAM-16 a `develop`, y que el fix de Tomás arregló el
+  test suite del backend (`./gradlew build` OK, incluido
+  `VehicleServiceTest`). Investigado CAM-57 (reportado por Tomás) sin
+  encontrar causa de crash real; Guido no pudo reproducirlo y se lo
+  reasignó. De ahí salió el diagnóstico de CAM-61 (calendario semanal sin
+  refrescar al planificar desde "Estado de la flota"), implementado,
+  verificado a mano en el navegador contra el backend real, y subido en
+  `bugfix/CAM-61` (PR #12) — nueva convención de ramas por tipo de issue
+  (`bugfix/`/`feature/`) confirmada con Guido. Jira de CAM-61 actualizada
+  con causa/fix/PR. Corregido que la regla de "sin atribución de Claude"
+  del 09-05 no había quedado guardada en memoria de verdad, y que revisar
+  los PRs de Guido es tarea de Tomás por default, no de Guido.
