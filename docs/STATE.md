@@ -8,54 +8,74 @@ de Guido.
 
 ## Dónde estamos
 
-Reconciliación confirmada contra lo que hizo Tomás: CAM-25 y CAM-16 mergeados
-a `develop` en los dos repos (PRs
-[#9](https://github.com/Tomas-Neira-Guitera/fleet-maintenance/pull/9) backend,
-[#11](https://github.com/Tomas-Neira-Guitera/fleet-maintenance-fe/pull/11)
-frontend), y el test suite del backend que estaba roto ya lo arregló Tomás.
-Se detectó, diagnosticó y arregló **CAM-61** (el calendario semanal no se
-refrescaba al planificar desde "Estado de la flota"), con PR abierto a
-`develop`.
+Arrancó la épica **CAM-59** (vista de taller/técnico): refinada en 4 historias
+hijas en Jira (CAM-67 a CAM-70) y ya implementada y subida la primera
+(**CAM-67**, rol Técnico), con PRs abiertos a `develop` en los dos repos.
+Sigue pendiente de review de Tomás el PR de **CAM-61** de la sesión anterior.
 
 ## En qué quedé
 
-- **Frontend, rama `bugfix/CAM-61`** (commit `7de3ac3`, pusheada,
-  [PR #12](https://github.com/Tomas-Neira-Guitera/fleet-maintenance-fe/pull/12)
-  contra `develop`, esperando review de Tomás): `WeeklyScheduleCard` gana un
-  prop `refreshKey` (mismo patrón que `FleetKpiCards`/`UpcomingMaintenanceCard`),
-  conectado a `onChanged` de `VehicleMaintenanceModal`, que antes solo
-  disparaba al completar un mantenimiento y no al planificarlo.
-- **Backend**: sin cambios de código esta sesión. Working directory movido
-  de `feature/CAM-25` (ya mergeada) a `develop`.
-- Verificado a mano en el navegador contra el backend real: programar desde
-  "Estado de la flota" hace aparecer el turno en el calendario sin recargar.
-  Dato de prueba generado y limpiado (cancelado) al terminar.
-- Jira **CAM-61** actualizada con causa, fix, alcance y link al PR.
-- **CAM-57** (bug "rompe al programar desde el calendario" que reportó
-  Tomás): se revisó todo el flujo de código (frontend + backend + manejo de
-  errores) sin encontrar causa de crash real. Guido no pudo reproducirlo y
-  se lo reasignó a Tomás en Jira.
-- **Nueva convención de ramas**, confirmada explícitamente por Guido:
-  `bugfix/<CARD-ID>` para bugs (Jira "Error"), `feature/<CARD-ID>` para el
-  resto — reemplaza la convención única de `feature/<CARD-ID>` para todo.
+- **CAM-67 implementada y subida**, rama `feature/CAM-67` en los dos repos:
+  - Backend (`d8d8b20`): `TECNICO` agregado al enum `Role.java` (antes solo
+    `ADMIN`/`CHOFER`); usuario de prueba `tecnico`/`tecnico123` en
+    `docs/db/seed-users.sql`. Sin cambios en `AuthController`/`AuthService`.
+    [PR #10](https://github.com/Tomas-Neira-Guitera/fleet-maintenance/pull/10).
+  - Frontend (`d51b61c`): `Role` extendido en `types/domain.ts` a
+    `'ADMIN' | 'CHOFER' | 'TECNICO'`. `App.tsx` sin tocar a propósito (eso es
+    CAM-68) — hoy un login como técnico cae en el flujo de Chofer, es lo
+    esperado. [PR #13](https://github.com/Tomas-Neira-Guitera/fleet-maintenance-fe/pull/13).
+- Verificado a mano (Claude y Guido, cada uno por su lado) contra el backend
+  real: login de `tecnico` devuelve JWT con `role: "TECNICO"`; admin/chofer
+  sin regresión. `./gradlew build` y `npm run lint && npm run build` en verde.
+- Encontrado y corregido en el camino: el `CHECK` constraint
+  `users_role_check` de la base local no se actualizó solo con
+  `ddl-auto: update` (mismo patrón ya conocido, ver Callejones) — arreglado a
+  mano con `ALTER TABLE`.
+- Jira **CAM-67** actualizada con comentario y los dos links de PR.
+- **CAM-59 refinada en Jira**: CAM-67, **CAM-68** ("Login → shell de
+  Técnico"), **CAM-69** ("Vista de defectos abiertos, taller") y **CAM-70**
+  ("Vista de mantenimientos programados, taller") creadas como hijas.
+  Alcance del MVP fijado con Guido: el técnico ve todo el trabajo abierto de
+  la flota (sin asignación personal todavía), sin auth enforcement nuevo en
+  el backend, con un shell propio (no se reusa `AdminShell`).
+- **Swap de sprint sin alterar velocity**: se sacaron **CAM-65** (3 SP, "Mejorar
+  UI/UX del calendar de planificación") y **CAM-66** (3 SP, "Sarasa 2") del
+  sprint activo, y entraron **CAM-67** y **CAM-68** (3 SP cada una) — el total
+  de story points del sprint no cambió. CAM-65/CAM-66 siguen existiendo en
+  Jira, solo que fuera del sprint por ahora.
+- Se leyó y resumió `docs/POC-documentacion.md` (commit `19feae7` de Tomás,
+  2026-09-13, directo a `develop` sin PR, encontrado al contrastar
+  `/retomar` contra el git real) — documentación retrospectiva de la PoC
+  (resumen ejecutivo + user stories de lo ya entregado), sin impacto de
+  código.
+- Confirmado con Guido: el rol "Mantenimiento" que menciona la descripción
+  de CAM-23 es el mismo concepto que "Técnico" de CAM-59 — relevante para
+  cuando se encare CAM-23.
 
 ## Qué sigue
 
-- [PR #12](https://github.com/Tomas-Neira-Guitera/fleet-maintenance-fe/pull/12)
-  a la espera de que lo revise Tomás (no es tarea de Guido, ver Decisiones
-  abiertas / convenciones del equipo).
+- Esperar review de Tomás en los PRs de **CAM-67**
+  ([backend #10](https://github.com/Tomas-Neira-Guitera/fleet-maintenance/pull/10),
+  [frontend #13](https://github.com/Tomas-Neira-Guitera/fleet-maintenance-fe/pull/13))
+  y en el de **CAM-61**
+  ([PR #12](https://github.com/Tomas-Neira-Guitera/fleet-maintenance-fe/pull/12),
+  sigue abierto).
+- **CAM-68** ("Login → shell de Técnico") es el próximo paso concreto:
+  agregar el branch de routing en `App.tsx` + crear `TechnicianShell.tsx`.
+  Depende de que CAM-67 esté mergeada. Bloqueado por una decisión de layout,
+  ver Decisiones abiertas.
+- **CAM-69/CAM-70** (vistas de defectos/mantenimientos para el taller)
+  quedan en el backlog de CAM-59, fuera del sprint, para cuando corresponda.
+- Quien retome en otra máquina/base local va a necesitar el mismo fix manual
+  del `CHECK` constraint de `users` antes de poder loguear un usuario
+  técnico (ver Callejones).
 - Cuando Tomás retome **CAM-57**: no tiene descripción en texto, solo una
   captura que no se pudo ver (el navegador de la sesión no tiene login de
   Jira).
-- Backlog nuevo del sprint sin arrancar: **CAM-58** (evaluar rediseño UI),
-  **CAM-59** (vista taller/técnico), **CAM-60** (dashboard de taller con
-  órdenes de trabajo), **CAM-62** (interno/tercerizado), **CAM-63** (sección
-  "Mantenimientos"/gastos) — CAM-60 y CAM-63 dependen de "órdenes de
-  trabajo", que todavía no existe.
-- **CAM-65** ya no es un placeholder: Guido la repurposeó como "Mejorar
-  UI/UX del calendar de planificación" (con una captura que no se pudo ver,
-  mismo problema de siempre con Jira sin login). **CAM-66** sigue como
-  comodín sin usar — ver Decisiones abiertas.
+- Backlog del sprint sin arrancar: **CAM-58** (evaluar rediseño UI),
+  **CAM-60** (dashboard de taller con órdenes de trabajo), **CAM-62**
+  (interno/tercerizado), **CAM-63** (sección "Mantenimientos"/gastos) —
+  CAM-60 y CAM-63 dependen de "órdenes de trabajo", que todavía no existe.
 - CAM-16: historial visible de completions (cuántas veces se hizo un
   mantenimiento) quedó fuera de su entrega original.
 - CAM-25: validación de formato de patente e historial de altas/bajas
@@ -63,7 +83,8 @@ refrescaba al planificar desde "Estado de la flota"), con PR abierto a
 - **Router del frontend**: sigue pendiente, cada vez conviven más
   pantallas con el routing manual de `App.tsx`.
 - **CAM-23** (gestión de usuarios y roles) — el panel admin ya existe, es
-  candidata a arrancar.
+  candidata a arrancar; confirmado que su rol "Mantenimiento" = "Técnico"
+  de CAM-59.
 - Confirmar con Tomás si **CAM-21** ("Vista de próximos mantenimientos"
   dedicada) sigue haciendo falta o ya quedó cubierta por el calendario
   (CAM-42).
@@ -79,13 +100,18 @@ refrescaba al planificar desde "Estado de la flota"), con PR abierto a
 
 ## Decisiones abiertas
 
+- **Nueva: layout de `TechnicianShell` (CAM-68).** Sin definir todavía —
+  mobile-first como Chofer, o desktop como Admin. Bloquea el arranque de
+  CAM-68, anotado en la historia como "definir con Guido/Tomás antes de
+  construir".
 - **Nueva: convención `bugfix/` vs. `feature/`.** Confirmada por Guido el
   2026-09-16 según el tipo de issue en Jira ("Error" → `bugfix/`, el resto →
   `feature/`). Falta que Tomás la adopte — sigue siendo solo la convención
   de Guido para sus propias ramas.
 - **Router del frontend.** Sin cambios.
 - **Autenticación en el resto de endpoints.** Sin cambios — JWT solo
-  protege el login todavía.
+  protege el login todavía. CAM-68 sigue el mismo patrón (sin enforcement
+  real en backend) a propósito, para no mezclar esto con esa épica.
 - **PRs de `feature/guido`.** Sin cambios, siguen abiertos (#3 en cada
   repo) sin contenido útil.
 - **Flujo de ramas/PRs formal.** Parcialmente resuelto: además de la
@@ -96,17 +122,19 @@ refrescaba al planificar desde "Estado de la flota"), con PR abierto a
   ritual.** Sin cambios — el procedimiento de reconciliación (git + JQL)
   volvió a funcionar bien esta sesión.
 - **`ddl-auto: update` no retroactiva constraints en bases ya creadas.**
-  Sin cambios.
+  Sin cambios (nueva instancia del mismo problema esta sesión, ver
+  Callejones).
 - **CAM-21 vs. calendario nuevo.** Sin cambios.
 - **Forma del error de la API.** Sin cambios.
 - **Paginación.** Sigue abierta.
 - **Modelo de datos / versionado de schema.** Sin cambios (JPA `ddl-auto`,
   sin Flyway).
-- **Nueva: CAM-66 ("Sarasa 2").** Sigue siendo un ticket comodín
-  pre-estimado sin repurposear — el equipo agrega estos a propósito para no
-  alterar la velocity del sprint al sumar trabajo no planeado (ver
-  Callejones sin salida). Repurposear cuando aparezca trabajo real que
-  encaje.
+- **CAM-66 ("Sarasa 2").** Le tocó salir del sprint esta sesión (swap por
+  CAM-67, ver "En qué quedé"), pero su contenido sigue sin repurposear —
+  sigue siendo el comodín para sumar trabajo no planeado sin alterar la
+  velocity. **CAM-65** también quedó fuera del sprint (ya no era comodín,
+  Tomás la había repurposeado como mejora de UI del calendario) — vuelve a
+  quedar disponible para meterla en un sprint futuro.
 
 ## Callejones sin salida
 
@@ -242,6 +270,14 @@ Lo que se probó y no funcionó, con el motivo. Se agrega, no se reemplaza.
   el sprint sin alterar la velocity (Story Points ya comprometidos). Antes
   de asumir que un ticket así es descartable, confirmar si ya fue
   repurposeado (título/descripción reales) o sigue de comodín.
+- **2026-09-16** — El `CHECK` constraint que Hibernate genera para un campo
+  `@Enumerated(EnumType.STRING)` tampoco se actualiza solo con
+  `ddl-auto: update` en una base local ya creada — mismo problema ya
+  documentado para `Vehicle.active`/`MaintenancePlan.category`, pero esta
+  vez en `users.role` (`users_role_check`), al agregar el valor `TECNICO`
+  al enum. Se resuelve igual: `ALTER TABLE users DROP CONSTRAINT
+  users_role_check` + recrearlo con el valor nuevo, a mano, antes de poder
+  insertar un usuario con el rol agregado.
 
 ## Historial
 
@@ -370,3 +406,17 @@ Una línea por sesión.
   con causa/fix/PR. Corregido que la regla de "sin atribución de Claude"
   del 09-05 no había quedado guardada en memoria de verdad, y que revisar
   los PRs de Guido es tarea de Tomás por default, no de Guido.
+- **2026-09-16** (continuación) — Encontrado al contrastar `/retomar` contra
+  git que Tomás había subido `docs/POC-documentacion.md` directo a
+  `develop` sin pasar por PR (revisado, sin impacto de código). Arrancada la
+  épica CAM-59 (vista de taller/técnico): refinada en Jira en 4 historias
+  (CAM-67/68/69/70) tras explorar el código con 3 subagentes en paralelo
+  (auth/roles, routing del frontend, modelo de datos) en plan mode.
+  Confirmado con Guido el alcance del MVP (todo visible, sin auth
+  enforcement nuevo, shell propio) y que el rol "Mantenimiento" de CAM-23 es
+  el mismo que "Técnico". Hecho un swap de sprint para meter CAM-67/CAM-68
+  sin alterar la velocity (afuera CAM-65/CAM-66, 3 SP cada una). Implementada
+  y verificada a mano CAM-67 (rol Técnico) en los dos repos, con PRs
+  abiertos a `develop` (backend #10, frontend #13) y Jira actualizada.
+  Encontrado y corregido el mismo problema de `ddl-auto`/constraints ya
+  conocido, esta vez en `users.role`.
