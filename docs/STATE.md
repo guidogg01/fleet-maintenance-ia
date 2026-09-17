@@ -8,10 +8,11 @@ de Guido.
 
 ## Dónde estamos
 
-Arrancó la épica **CAM-59** (vista de taller/técnico): refinada en 4 historias
-hijas en Jira (CAM-67 a CAM-70) y ya implementada y subida la primera
-(**CAM-67**, rol Técnico), con PRs abiertos a `develop` en los dos repos.
-Sigue pendiente de review de Tomás el PR de **CAM-61** de la sesión anterior.
+Épica **CAM-59** (vista de taller/técnico) avanza: **CAM-67** (rol Técnico) y
+**CAM-68** (shell de Técnico) implementadas y con PR, pero ninguna mergeada
+todavía — CAM-68 depende de CAM-67 y su PR quedó en Draft a propósito hasta
+que eso se resuelva. Sigue pendiente de review de Tomás también el PR de
+**CAM-61**.
 
 ## En qué quedé
 
@@ -51,21 +52,51 @@ Sigue pendiente de review de Tomás el PR de **CAM-61** de la sesión anterior.
 - Confirmado con Guido: el rol "Mantenimiento" que menciona la descripción
   de CAM-23 es el mismo concepto que "Técnico" de CAM-59 — relevante para
   cuando se encare CAM-23.
+- **CAM-68 implementada**, rama `feature/CAM-68` (frontend) — **encadenada
+  sobre `feature/CAM-67`**, que todavía no está en `develop` (PR #13 sin
+  mergear). Se decidió así con Guido en vez de esperar, para no bloquear el
+  trabajo.
+  - `src/App.tsx`: branch de routing `role === 'TECNICO'`.
+  - `src/components/technician/TechnicianShell.tsx` (nuevo): shell propio,
+    mobile-first, simple — calca el patrón de Chofer (nav con solo logout +
+    `.screen`), **no reusa** `AdminShell`/`AdminTab`. Placeholder sin
+    contenido funcional (eso es CAM-69/CAM-70).
+  - `src/App.css`: selector `.top-nav--tecnico`.
+  - Commit `0ccec99`.
+    [PR frontend #14](https://github.com/Tomas-Neira-Guitera/fleet-maintenance-fe/pull/14),
+    **en Draft** — no pasar a "Ready for review" hasta que CAM-67 esté
+    mergeada a `develop`, y rebasear contra `develop` antes de hacerlo (por
+    si Tomás mergea con squash).
+- Decisión de layout de CAM-68 confirmada con Guido: mobile-first como
+  Chofer, simple — layout explorado y plan propuesto antes de implementar.
+- Verificado a mano contra el backend real: login `tecnico`/`tecnico123` ve
+  `TechnicianShell`; `admin`/`chofer` sin regresión. `npm run lint`/
+  `npm run build` en verde. Revisado por el subagente `revisor`, sin
+  hallazgos bloqueantes (único detalle no bloqueante: falta `aria-label` en
+  el `nav`, mismo patrón preexistente en Chofer, no es regresión de este
+  cambio).
+- Jira de CAM-68 actualizada con comentario: link al PR y orden de
+  integración explícito.
+- Guido avisó a Tomás (Melli) el orden: CAM-67 (backend #10, frontend #13)
+  primero, después CAM-68 (#14), y el resto de cards de CAM-59 en ese mismo
+  orden a medida que se implementen.
+- Revisados los dos commits que Tomás pusheó directo a `develop`/`main` en
+  frontend el 2026-09-13 (`84e834e`, `faeca1c`, encontrados al contrastar
+  `/retomar` contra git) — limpieza cosmética del dashboard + logo, y
+  consolidación de "Asignar/Desasignar plan" (se sacó el botón duplicado de
+  `VehicleMaintenanceModal.tsx`, la funcionalidad sigue viva en
+  `PlanVehiclesModal.tsx`). Nada bloqueante, confirmado con Guido.
 
 ## Qué sigue
 
-- Esperar review de Tomás en los PRs de **CAM-67**
-  ([backend #10](https://github.com/Tomas-Neira-Guitera/fleet-maintenance/pull/10),
-  [frontend #13](https://github.com/Tomas-Neira-Guitera/fleet-maintenance-fe/pull/13))
-  y en el de **CAM-61**
-  ([PR #12](https://github.com/Tomas-Neira-Guitera/fleet-maintenance-fe/pull/12),
-  sigue abierto).
-- **CAM-68** ("Login → shell de Técnico") es el próximo paso concreto:
-  agregar el branch de routing en `App.tsx` + crear `TechnicianShell.tsx`.
-  Depende de que CAM-67 esté mergeada. Bloqueado por una decisión de layout,
-  ver Decisiones abiertas.
+- Esperar que Tomás mergee en orden: **CAM-67** (backend #10, frontend #13)
+  → **CAM-68** (frontend #14, pasar de Draft a Ready recién ahí, rebaseando
+  contra `develop` primero) → **CAM-61**
+  ([PR #12](https://github.com/Tomas-Neira-Guitera/fleet-maintenance-fe/pull/12))
+  también sigue esperando, en paralelo.
 - **CAM-69/CAM-70** (vistas de defectos/mantenimientos para el taller)
-  quedan en el backlog de CAM-59, fuera del sprint, para cuando corresponda.
+  quedan en el backlog de CAM-59, fuera del sprint. Van a necesitar
+  contenido real dentro de `TechnicianShell`, que hoy es solo placeholder.
 - Quien retome en otra máquina/base local va a necesitar el mismo fix manual
   del `CHECK` constraint de `users` antes de poder loguear un usuario
   técnico (ver Callejones).
@@ -100,11 +131,12 @@ Sigue pendiente de review de Tomás el PR de **CAM-61** de la sesión anterior.
 
 ## Decisiones abiertas
 
-- **Nueva: layout de `TechnicianShell` (CAM-68).** Sin definir todavía —
-  mobile-first como Chofer, o desktop como Admin. Bloquea el arranque de
-  CAM-68, anotado en la historia como "definir con Guido/Tomás antes de
-  construir".
-- **Nueva: convención `bugfix/` vs. `feature/`.** Confirmada por Guido el
+- **Nueva: ¿se formaliza el patrón de "rama encadenada + PR en Draft + nota
+  de dependencia" para cards que dependen de otra sin mergear?** Se usó
+  ad-hoc para CAM-68→CAM-67 esta sesión, funcionó, pero no está escrito
+  como convención en `docs/guias/sesiones.md`. Sin decidir si vale la pena
+  anotarlo o si fue un caso puntual.
+- **Convención `bugfix/` vs. `feature/`.** Confirmada por Guido el
   2026-09-16 según el tipo de issue en Jira ("Error" → `bugfix/`, el resto →
   `feature/`). Falta que Tomás la adopte — sigue siendo solo la convención
   de Guido para sus propias ramas.
@@ -420,3 +452,16 @@ Una línea por sesión.
   abiertos a `develop` (backend #10, frontend #13) y Jira actualizada.
   Encontrado y corregido el mismo problema de `ddl-auto`/constraints ya
   conocido, esta vez en `users.role`.
+- **2026-09-16** (continuación 2) — Confirmado con Guido el layout de
+  CAM-68 (mobile-first, simple, como Chofer). Explorado el código de
+  Chofer y propuesto un plan; implementada y verificada a mano CAM-68
+  (shell de Técnico) en el frontend, revisada por el subagente `revisor`
+  sin hallazgos bloqueantes. Descubierto que la rama activa era
+  `feature/CAM-67` (todavía sin mergear) y decidido con Guido encadenar
+  `feature/CAM-68` sobre ella en vez de esperar. Commiteado, pusheado y
+  abierto PR #14 a `develop` con la dependencia documentada, pasado a
+  Draft como traba técnica adicional, y Jira de CAM-68 actualizada con el
+  mismo detalle. Guido avisó a Tomás el orden de integración (CAM-67 →
+  CAM-68 → resto de CAM-59). Revisados sin hallazgos graves los dos
+  commits directos de Tomás del 2026-09-13 en frontend encontrados al
+  retomar.
