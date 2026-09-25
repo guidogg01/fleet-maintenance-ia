@@ -1,6 +1,6 @@
 # Estado — FleetGuard
 
-Última actualización: **2026-09-23**
+Última actualización: **2026-09-25**
 Se escribe con el ritual de `docs/guias/sesiones.md`, siempre con confirmación
 de Guido.
 
@@ -8,158 +8,99 @@ de Guido.
 
 ## Dónde estamos
 
-Rama de release `feature-combined` armada en los dos repos (partida de
-`develop`, con CAM-22 y CAM-67 ya integradas). Esta sesión se sumó CAM-14/62/63
-(órdenes de trabajo, de Tomás) a esa misma rama, resolviendo un choque de
-diseño real con CAM-22, y se probó todo a mano. Nada de esto está pusheado ni
-mergeado a `develop` todavía — sigue siendo un release candidate local.
+`feature-combined` quedó **mergeada a `develop` en los dos repos** (backend #12,
+frontend #19, mergeados por Guido el 2026-09-25): `develop` ya tiene CAM-14/62/63
+(órdenes de trabajo), CAM-22, CAM-67/68 y **CAM-60 completa** (vínculo técnico↔OT,
+vista mobile del técnico, contexto del defecto, OTs sin duplicar), más mejoras de UI
+sueltas. La épica CAM-59 (vista de taller) tiene por primera vez contenido real en
+`TechnicianShell`.
 
 ## En qué quedé
 
-- **`feature-combined` verificada de punta a punta** (backend PR
-  [#12](https://github.com/Tomas-Neira-Guitera/fleet-maintenance/pull/12),
-  frontend PR
-  [#19](https://github.com/Tomas-Neira-Guitera/fleet-maintenance-fe/pull/19)):
-  revisada con el subagente `revisor` en los dos repos contra `develop`. Sin
-  hallazgos bloqueantes. Único hallazgo real: `openapi.yaml` no documenta el
-  rol `TECNICO` (falta desde CAM-67, no es de esta sesión) — sigue sin
-  corregir.
-- **Revisados a fondo los PRs de Tomás de CAM-14/62/63** (backend
-  [#13](https://github.com/Tomas-Neira-Guitera/fleet-maintenance/pull/13),
-  frontend
-  [#18](https://github.com/Tomas-Neira-Guitera/fleet-maintenance-fe/pull/18)):
-  modelo de órdenes de trabajo (`WorkOrder` + gastos + fotos, máquina de
-  estados `asignada→en_proceso→finalizada/cancelada`, cierre automático del
-  origen — asignación, programación o defecto — al finalizar).
-- **Detectado y resuelto un choque de diseño entre CAM-22 y la CAM-15 de
-  Tomás**: las dos tocaban `VehiclesSection.tsx` para mostrar el historial de
-  un vehículo, de formas distintas (fila clickeable vs. sección fija con
-  selector). Se optó por unificar todo en `VehicleDetail.tsx` (las OTs se
-  piden aparte, `GET /api/work-orders?vehicleId=`, sin tocar el endpoint
-  `/history`) y se descartó `VehicleHistorySection.tsx` de Tomás.
-- **Mergeadas las ramas de Tomás a `feature-combined` local** (sin pushear):
-  - Backend: commit `be983d3`. Único conflicto real: dos métodos de
-    repositorio duplicados en `DefectRepository`
-    (`findByVehicleIdWithInspection` de CAM-22 vs `findAllByVehicleId` de
-    CAM-15) — consolidados en uno solo, actualizado el call site en
-    `DefectService`. Build + tests en verde.
-  - Frontend: commit `e9bd5b8`. Conflictos en `App.tsx` (imports) y
-    `dashboard.css` (bloques CSS que ninguno vio del otro) resueltos
-    manualmente; `VehiclesSection.tsx` restaurado a la versión de fila
-    clickeable de CAM-22, `VehicleHistorySection.tsx` y su CSS huérfana
-    borrados. Build + lint en verde.
-- **`VehicleDetail.tsx` extendido** con una cuarta tarjeta "Órdenes de
-  trabajo" (commit `b660b39`, frontend): layout en dos columnas por relación
-  de contenido (Inspecciones+Defectos / Mantenimientos+OTs) para no dejar
-  huecos con tarjetas de altura despareja, listas largas colapsadas a 3
-  ítems con un toggle, `Defectos`/`Órdenes de trabajo` ordenadas por
-  prioridad (bloqueante/en curso primero) con indicador en el título. Esta
-  última tanda de cambios **no pasó por el subagente `revisor`** todavía.
-- **Probado a mano en el navegador** contra backend+frontend locales en
-  `feature-combined` (puertos 8080/5173, parados al cerrar la sesión).
-  Cargados 7 defectos de prueba (3 bloqueantes, 4 no bloqueantes) en el
-  vehículo **CB299ZA** vía `POST /api/inspections` real (no SQL directo),
-  para validar el layout y el orden por prioridad.
+- **CAM-60 terminada, pusheada, mergeada y documentada en Jira** (descripción
+  cargada, título corregido).
+  - Backend: `WorkOrder.technicianId` + `technicianUsername` + `defect` (defecto de
+    origen), filtro `GET /api/work-orders?technicianId=`, `GET /api/users?role=` de
+    solo lectura (`UserController`/`UserService`, `role` obligatorio). `POST
+    /api/work-orders` reusa la OT abierta del mismo origen (defecto, asignación de
+    plan o programación manual) con 200 en vez de 201, sin pisar sus datos. Tests
+    en `WorkOrderServiceTest` (17) y `UserServiceTest`. Contrato: se documentó **todo
+    `/work-orders`** en `openapi.yaml` (faltaba desde CAM-14) y el rol `TECNICO`
+    (hallazgo pendiente); decisiones en `docs/api/CAM-60-technician-contract.md`.
+  - Frontend admin: selector de técnico (`WorkOrderResponsibleField.tsx`) en los
+    tres formularios de OT, filtro por técnico en `WorkOrdersSection`, aviso en
+    `SchedulePickerModal` al replanificar algo con OT abierta, y `DefectsList` con
+    "Replanificar" + quién tiene la OT.
+  - Frontend técnico: `technician/MyWorkOrders.tsx` + `TechnicianWorkOrder.tsx`
+    (empezar/finalizar con descripción, fotos y km; defecto de origen con foto y
+    gravedad; bloqueantes primero; aviso "Para finalizar falta…"). El técnico se
+    identifica por el `sub` del JWT (`getSessionUserId()` en `apiClient.ts`).
+- **Mejoras de UI en los mismos PRs:** `PhotoViewer.tsx` (foto a pantalla completa
+  en la misma página, CAM-53; falta aplicarlo en `DefectsList`), Editar/Dar de
+  baja/Reactivar movidos de la tabla de Vehículos a `VehicleDetail`, estilos de
+  "Volver" y del menú del admin, ojito en la contraseña del login, mensaje claro
+  de formato de foto (JPG/PNG) en los dos repos y `accept` limitado a jpeg/png.
+- **Correcciones de la revisión de `b660b39`** en `VehicleDetail` (defectos
+  resueltos ya no cuentan como bloqueantes, el historial se refresca al finalizar
+  una OT).
+- **Todo pasó por el subagente `revisor`** (5 rondas), sin hallazgos bloqueantes;
+  lo que marcó se corrigió o quedó anotado abajo.
+- **Datos locales:** usuario `tecnico2` agregado; `seed-users.sql` ahora es
+  re-ejecutable (`on conflict do nothing`); columna `technician_id` creada sola.
+  Quedan OTs de prueba en CB299ZA/AI153CD asignadas a `tecnico2`; se canceló una OT
+  duplicada real de AI153CD.
 
 ## Qué sigue
 
-- **Próxima card: [CAM-60](https://fleet-maintenance.atlassian.net/browse/CAM-60)**
-  ("Dashboard de taller con órdenes de trabajo", épica CAM-59, sin
-  descripción en Jira todavía). Guido quiere empezar a vincular las órdenes
-  de trabajo con los técnicos: un técnico asociado a una OT, y esa OT
-  asociada a un vehículo. Hoy `WorkOrder.assignee` es texto libre (no una
-  relación con un usuario `TECNICO` real) — el diseño de esa relación es el
-  punto de partida.
-- Seguir completando la épica **CAM-59** en general: `TechnicianShell` sigue
-  siendo placeholder (CAM-69/70 en el backlog necesitan contenido real ahí;
-  el trabajo de esta sesión en `VehicleDetail` puede servir de base para una
-  vista de OTs del técnico).
-- Antes o al mergear `feature-combined` a `develop`: corregir `openapi.yaml`
-  para documentar el rol `TECNICO` (hallazgo pendiente de la revisión de
-  esta sesión).
-- Pasar el trabajo de `VehicleDetail.tsx` de esta sesión (commit `b660b39`)
-  por el subagente `revisor` antes de dar por cerrada la integración.
-- **CAM-60** y **CAM-63** (sección "Mantenimientos"/gastos) dependían de
-  CAM-14 — CAM-14 ya está integrada en `feature-combined` (no en `develop`
-  todavía), así que en rigor siguen bloqueadas hasta que `feature-combined`
-  se mergee, salvo que se decida trabajar CAM-60 directo sobre
-  `feature-combined`.
-- **CAM-69/CAM-70** (vistas de defectos/mantenimientos para el taller) quedan en
-  el backlog de CAM-59, fuera del sprint. Van a necesitar contenido real dentro
-  de `TechnicianShell`, que hoy es solo placeholder; el historial de CAM-22
-  puede servirles de base.
-- Quien retome en otra máquina/base local va a necesitar el mismo fix manual del
-  `CHECK` constraint de `users` antes de poder loguear un usuario técnico (ver
-  Callejones).
-- Cuando Tomás retome **CAM-57**: no tiene descripción en texto, solo una
-  captura que no se pudo ver (el navegador de la sesión no tiene login de Jira).
-- Backlog del sprint sin arrancar: **CAM-58** (evaluar rediseño UI), **CAM-62**
-  (interno/tercerizado); CAM-60 y CAM-63 dependen de CAM-14.
-- CAM-16: el historial de completions ahora se ve en el detalle de vehículo
-  (CAM-22), pero sigue sin haber un contador de "cuántas veces se hizo un
-  mantenimiento" — quedó fuera de su entrega original.
-- CAM-25: validación de formato de patente e historial de altas/bajas quedaron
-  fuera — menores.
-- **Router del frontend**: sigue pendiente, cada vez conviven más pantallas con
-  el routing manual de `App.tsx` (se sumó `admin-vehicle` esta sesión).
-- **CAM-23** (gestión de usuarios y roles) — el panel admin ya existe, es
-  candidata a arrancar; su rol "Mantenimiento" = "Técnico" de CAM-59.
-- Confirmar con Tomás si **CAM-21** ("Vista de próximos mantenimientos"
-  dedicada) sigue haciendo falta o ya quedó cubierta por el calendario (CAM-42).
-- Backlog viejo en Jira sin refinar: **CAM-52** (apartado de "Gastos"),
-  **CAM-53** (modal para ver foto sin salir de la página), **CAM-54** (hover en
-  menú hamburguesa).
-- **Proteger endpoints con el JWT real**: sigue igual, `X-Driver-Id` es lo único
-  que el backend valida de verdad hoy.
-- Repasar la cobertura de tests del backend más allá de `AuthService`/
-  `DefectService`/`VehicleService` (controllers, `PhotoService`, mappers,
-  `GlobalExceptionHandler`, `ScheduledMaintenanceService`); el mapeo con datos
-  reales de `VehicleHistoryService` tampoco tiene test todavía.
+- **Cerrar CAM-53:** usar `PhotoViewer` en `DefectsList.tsx` ("Ver foto" todavía
+  abre otra pestaña).
+- **Deuda de las revisiones (admin/backend):** `FinalizeWorkOrderModal` (carrera
+  entre quitar foto y finalizar; km con decimales/negativos, que el backend tampoco
+  valida); `WorkOrderService.update` deja editar OTs finalizadas/canceladas; los
+  modales del admin no retienen el foco con Tab; N+1 en `GET /api/work-orders`
+  (~5 queries por OT).
+- **Probar la cámara en un Android real** con el `accept="image/jpeg,image/png"`
+  nuevo (chofer y técnico).
+- **Limpiar o decidir las OTs de prueba** de CB299ZA/AI153CD.
+- **Pasarle a Tomás el script de técnicos** (`pepe`/`raul`, contraseña
+  `tecnico123`, más el fix del `CHECK` de `users.role`) para que pruebe CAM-60 en
+  `develop`. Guido se lo manda por WhatsApp.
+- **Próximo sprint: registro de usuarios según rol** (CAM-23) — Guido lo pidió
+  explícitamente para después, no en CAM-60.
+- **Siguen vigentes de antes:** router del frontend; proteger endpoints con el JWT
+  (sigue sin enforcement); cobertura de tests del backend (controllers,
+  `PhotoService`, mappers); CAM-21 vs. calendario; CAM-58, CAM-16 (contador),
+  CAM-25 (menores), CAM-52/53/54, CAM-57.
+- **Borrar las ramas ya mergeadas** (`feature-combined`,
+  `feature/CAM-14-ordenes-de-trabajo`, `feature/CAM-22`, `feature/CAM-67`,
+  `feature/CAM-68`) si el equipo quiere.
 
 ## Decisiones abiertas
 
-- **Nueva: modelo de vínculo técnico↔OT para CAM-60.** ¿Se reemplaza
-  `WorkOrder.assignee` (string libre) por una relación real a un usuario con
-  rol `TECNICO`, o se agrega un campo nuevo aparte? Es el punto de partida
-  de la próxima sesión.
-- **Nueva: ¿cuándo se mergea `feature-combined` a `develop`?** Los dos PRs
-  (#12 backend, #19 frontend) están abiertos y mergeables, pero Guido
-  decidió no mergear todavía — CAM-60 se sigue trabajando antes, sobre la
-  misma rama o sobre una nueva encadenada.
-- **Paginación del historial de vehículo.** Se dejó sin paginar, como el
-  resto de la API. Se revisa si un vehículo acumula mucho historial.
-- **Cómo se vinculan las órdenes de trabajo (CAM-14) con los vehículos, más
-  allá de lo ya resuelto.** `WorkOrder.vehicleId` ya existe y CAM-60 lo va a
-  usar; sigue abierto si `workOrderId` de las completions debería apuntar a
-  una orden real (hoy queda como referencia suelta).
-- **¿Se formaliza el patrón de "rama encadenada + PR en Draft + nota de
-  dependencia"** para cards que dependen de otra sin mergear? Se usó ad-hoc para
-  CAM-68→CAM-67; no está escrito como convención en `docs/guias/sesiones.md`.
-  (CAM-22, en cambio, salió directo de `develop`.)
-- **Convención `bugfix/` vs. `feature/`.** Confirmada por Guido el 2026-09-16
-  según el tipo de issue en Jira ("Error" → `bugfix/`, el resto → `feature/`).
-  Falta que Tomás la adopte.
+- **Nueva: ¿cancelar una programación en el calendario debería cancelar su OT?**
+  Hoy no. Replanificar ya no duplica, pero una programación cancelada deja su OT
+  abierta.
+- **Nueva: ¿CAM-69/CAM-70 siguen haciendo falta?** (vistas de todos los defectos y
+  mantenimientos para el técnico). Con "Mis órdenes" el técnico ve lo que tiene
+  asignado; falta decidir si también tiene que ver lo no asignado.
+- **Nueva: ¿el técnico debería poder ver/editar OTs de otros?** El filtro es de
+  UI; la API no restringe nada. Atado a proteger endpoints con JWT.
+- **Paginación** (historial de vehículo y en general). Sin cambios.
+- **`workOrderId` de las completions:** parcialmente resuelta — las que registra
+  una OT al finalizarse llevan su id real; las cargadas a mano siguen siendo texto
+  libre.
+- **Patrón "rama encadenada + PR en Draft"**: sigue sin formalizar.
+- **Convención `bugfix/` vs `feature/`**: falta que Tomás la adopte.
 - **Router del frontend.** Sin cambios.
-- **Autenticación en el resto de endpoints.** Sin cambios — JWT solo protege el
-  login todavía; CAM-22 sigue el mismo patrón (sin enforcement en backend).
-- **PRs de `feature/guido`.** Sin cambios, siguen abiertos (#3 en cada repo) sin
-  contenido útil.
-- **Flujo de ramas/PRs formal.** Parcialmente resuelto: convención de nombres
-  confirmada, más que Tomás revisa/mergea los PRs de las sesiones de Guido por default. El
-  acuerdo formal completo con Tomás sigue sin cerrar.
-- **Cómo mantener `STATE.md` al día cuando Tomás mergea sin pasar por este
-  ritual.** Sin cambios — el procedimiento de reconciliación (git + JQL) sigue
-  funcionando.
-- **`ddl-auto: update` no retroactiva constraints en bases ya creadas.** Sin
-  cambios (ver Callejones).
-- **CAM-21 vs. calendario nuevo.** Sin cambios.
-- **Forma del error de la API.** Sin cambios.
-- **Paginación en general.** Sigue abierta.
-- **Modelo de datos / versionado de schema.** Sin cambios (JPA `ddl-auto`, sin
-  Flyway).
-- **CAM-66 ("Sarasa 2").** Sigue fuera del sprint y sin repurposear — es el
-  comodín para sumar trabajo no planeado sin alterar la velocity. **CAM-65**
-  también quedó fuera del sprint y disponible para uno futuro.
+- **Autenticación en el resto de endpoints.** Sin cambios.
+- **PRs de `feature/guido`.** Siguen abiertos sin contenido útil.
+- **Flujo de ramas/PRs formal.** Parcial; esta vez Guido mergeó él mismo
+  `feature-combined` a `develop`.
+- **Cómo mantener `STATE.md` al día cuando Tomás mergea sin el ritual.** Sin
+  cambios.
+- **`ddl-auto: update` no retroactiva constraints.** Sin cambios.
+- **Forma del error de la API, modelo de datos / versionado de schema, CAM-21,
+  CAM-66.** Sin cambios.
 
 ## Callejones sin salida
 
@@ -351,6 +292,35 @@ Lo que se probó y no funcionó, con el motivo. Se agrega, no se reemplaza.
   antes de arrancar una card que toca una pantalla que otra card también
   toca, revisar si hay algo a medio mergear en `feature-combined` que la
   pise.
+- **2026-09-24** — El cartel "Cambia tu contraseña" al loguearse es la detección
+  de contraseñas filtradas del Gestor de contraseñas de Chrome, no de FleetGuard.
+  No hay forma legítima de apagarlo desde el código (los trucos de disfrazar el
+  campo de contraseña rompen gestores y accesibilidad). Se apaga en
+  `chrome://settings/security`, pero el interruptor **solo aparece con
+  "Protección estándar"**; con "Protección mejorada" está siempre activo y oculto.
+  Alternativa sin tocar Chrome: contraseñas de prueba que no estén filtradas.
+- **2026-09-24** — `.claude/launch.json` con `cmd /c "cd /d ... && ..."` y comillas
+  anidadas falló ("sintaxis de la etiqueta del volumen no son correctos"), y un
+  `sed` sobre rutas de Windows se comió las barras invertidas. Lo que anduvo:
+  scripts `.cmd` aparte (con `set VAR=` y `call`) y `runtimeExecutable` apuntando
+  a ellos.
+- **2026-09-24** — Un heredoc de Bash con Python adentro (con `'\n'` en strings) se
+  cortó a la mitad ("unexpected EOF"), mismo problema que el 2026-09-20 con Java.
+  Escribir el script a un archivo de la carpeta temporal y correrlo.
+- **2026-09-24** — Repetición del callejón del 2026-09-20: Guido se logueó en su
+  Chrome/`5173` y el panel del navegador de la sesión (`5174`) seguía sin sesión;
+  además el panel puede estar **oculto** en la app sin que se note (`tabs_select`
+  lo trae al frente). Claude tampoco usa la contraseña de Postgres para correr
+  `psql`: el seed lo corrió Guido desde pgAdmin.
+- **2026-09-25** — Al verificar los PRs, `feature/CAM-22` (frontend) parecía tener
+  3 commits que no estaban en `feature-combined`. Falso positivo: el PR #15 se
+  mergeó a `develop` con **squash**, así que los commits originales quedan
+  "sueltos" aunque su contenido ya está. Ante una rama que parece incompleta,
+  mirar si su PR se mergeó con squash antes de asumir que falta algo.
+- **2026-09-24** — Los defectos de prueba cargados el 2026-09-22 en CB299ZA tienen
+  `photoUrl` relativo a un archivo que no existe (`/uploads/photos/seed-placeholder-1.jpg`);
+  en la vista del técnico se ve "No se pudo cargar la foto del defecto". No es un
+  bug: los defectos reales guardan URL absoluta.
 
 ## Historial
 
@@ -532,3 +502,12 @@ Una línea por sesión.
   prueba (3 bloqueantes) en el vehículo CB299ZA vía la API real para validar
   todo. Nada pusheado ni mergeado a `develop`; próxima card definida:
   CAM-60 (vínculo técnico↔OT).
+- **2026-09-24/25** — CAM-60 completa sobre `feature-combined`: vínculo
+  técnico↔OT, `GET /api/users`, vista mobile "Mis órdenes" del técnico con cierre
+  de OT y contexto del defecto, una sola OT abierta por origen (se encontró y
+  canceló un duplicado real) y "Replanificar" en Defectos. Además, mejoras de UI
+  (visor de fotos CAM-53, acciones de vehículo al detalle, "Volver"/menú, ojito
+  del login, mensaje de formato de foto). `openapi.yaml` con `/work-orders`
+  documentado completo. Todo pasó por `revisor` (5 rondas), se pusheó, y Guido
+  mergeó `feature-combined` a `develop` en los dos repos (#12, #19). Card CAM-60
+  completada en Jira.
