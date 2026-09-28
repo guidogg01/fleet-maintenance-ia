@@ -1,6 +1,6 @@
 # Estado — FleetGuard
 
-Última actualización: **2026-09-25**
+Última actualización: **2026-09-28**
 Se escribe con el ritual de `docs/guias/sesiones.md`, siempre con confirmación
 de Guido.
 
@@ -8,83 +8,81 @@ de Guido.
 
 ## Dónde estamos
 
-`feature-combined` quedó **mergeada a `develop` en los dos repos** (backend #12,
-frontend #19, mergeados por Guido el 2026-09-25): `develop` ya tiene CAM-14/62/63
-(órdenes de trabajo), CAM-22, CAM-67/68 y **CAM-60 completa** (vínculo técnico↔OT,
-vista mobile del técnico, contexto del defecto, OTs sin duplicar), más mejoras de UI
-sueltas. La épica CAM-59 (vista de taller) tiene por primera vez contenido real en
-`TechnicianShell`.
+`develop` sigue igual que al cierre anterior en los dos repos (CAM-60 y todo
+`feature-combined` mergeado). La sesión del 2026-09-26/28 fue de **ordenar el
+backlog de Jira**, sin código. Después, Guido y Tomás **priorizaron el sprint 5
+por Pareto**: CAM-23, 30, 78, 32, 75, 74, 77 y 53, en ese orden.
 
 ## En qué quedé
 
-- **CAM-60 terminada, pusheada, mergeada y documentada en Jira** (descripción
-  cargada, título corregido).
-  - Backend: `WorkOrder.technicianId` + `technicianUsername` + `defect` (defecto de
-    origen), filtro `GET /api/work-orders?technicianId=`, `GET /api/users?role=` de
-    solo lectura (`UserController`/`UserService`, `role` obligatorio). `POST
-    /api/work-orders` reusa la OT abierta del mismo origen (defecto, asignación de
-    plan o programación manual) con 200 en vez de 201, sin pisar sus datos. Tests
-    en `WorkOrderServiceTest` (17) y `UserServiceTest`. Contrato: se documentó **todo
-    `/work-orders`** en `openapi.yaml` (faltaba desde CAM-14) y el rol `TECNICO`
-    (hallazgo pendiente); decisiones en `docs/api/CAM-60-technician-contract.md`.
-  - Frontend admin: selector de técnico (`WorkOrderResponsibleField.tsx`) en los
-    tres formularios de OT, filtro por técnico en `WorkOrdersSection`, aviso en
-    `SchedulePickerModal` al replanificar algo con OT abierta, y `DefectsList` con
-    "Replanificar" + quién tiene la OT.
-  - Frontend técnico: `technician/MyWorkOrders.tsx` + `TechnicianWorkOrder.tsx`
-    (empezar/finalizar con descripción, fotos y km; defecto de origen con foto y
-    gravedad; bloqueantes primero; aviso "Para finalizar falta…"). El técnico se
-    identifica por el `sub` del JWT (`getSessionUserId()` en `apiClient.ts`).
-- **Mejoras de UI en los mismos PRs:** `PhotoViewer.tsx` (foto a pantalla completa
-  en la misma página, CAM-53; falta aplicarlo en `DefectsList`), Editar/Dar de
-  baja/Reactivar movidos de la tabla de Vehículos a `VehicleDetail`, estilos de
-  "Volver" y del menú del admin, ojito en la contraseña del login, mensaje claro
-  de formato de foto (JPG/PNG) en los dos repos y `accept` limitado a jpeg/png.
-- **Correcciones de la revisión de `b660b39`** en `VehicleDetail` (defectos
-  resueltos ya no cuentan como bloqueantes, el historial se refresca al finalizar
-  una OT).
-- **Todo pasó por el subagente `revisor`** (5 rondas), sin hallazgos bloqueantes;
-  lo que marcó se corrigió o quedó anotado abajo.
-- **Datos locales:** usuario `tecnico2` agregado; `seed-users.sql` ahora es
-  re-ejecutable (`on conflict do nothing`); columna `technician_id` creada sola.
-  Quedan OTs de prueba en CB299ZA/AI153CD asignadas a `tecnico2`; se canceló una OT
-  duplicada real de AI153CD.
+- **Backlog de Jira reordenado (sin código):**
+  - **Pasadas a Finalizada**, con comentario de dónde está hecha cada una: CAM-17
+    (el cálculo de vencimientos ya existe en `MaintenanceStatusCalculator`), CAM-38
+    (repetida de CAM-20), CAM-39 (repetida de CAM-49), CAM-54 (hover del menú,
+    hecho en `2be2f89`).
+  - **Reescritas:** CAM-52 (vista de Gastos con `GET /api/expenses`), CAM-53
+    (visor de fotos en `DefectsList`), CAM-69 (el técnico solo accede a sus OTs,
+    con enforcement en la API), CAM-70 ("Mi agenda", con `plannedDate` en la OT).
+  - **Épicas nuevas:** CAM-71 "Gestión de Flota" (CAM-25, CAM-56) y CAM-72
+    "Infraestructura" (CAM-30, CAM-35).
+  - **Cards movidas de épica:** a CAM-8 (42, 57, 61, 24, 65), a CAM-9 (37, 38, 39,
+    40, 54), a CAM-7 (22, 53), a CAM-64 (52), a CAM-6 (55). CAM-58 queda sin
+    épica a propósito.
+- **Cards nuevas:** CAM-73 (proteger la API con el JWT), CAM-74 (validaciones al
+  finalizar una OT), CAM-75 (no editar OTs cerradas), CAM-76 (N+1 en
+  `/work-orders`), CAM-77 (cancelar una programación cancela su OT).
+- **Cards vacías o incompletas completadas** con la estructura estándar (historia,
+  Contexto, Alcance, Criterios, Depende de, Fuera de alcance, Contrato): CAM-19,
+  23, 24, 30, 31, 32, 33, 34, 55, 56, 58 y 65.
+- **Priorización del sprint 5 (Guido y Tomás, por Pareto):** CAM-23 → 30 → 78 →
+  32 → 75 → 74 → 77 → 53. CAM-78 "Test back" (cobertura de tests del backend) la
+  crearon ellos; CAM-32 pasó a llamarse "Cargas de descripciones por audio"; el
+  refinamiento de CAM-65 pasó del comentario a la descripción.
+- **CAM-23 y CAM-73 ajustadas (2026-09-28):** CAM-23 ahora también protege **solo
+  `/api/users`** (JWT + rol ADMIN, 401/403); CAM-73 extiende ese filtro al resto
+  de la API.
+- **Nada en los repos de código.** `.idea/misc.xml` sin commitear en el backend
+  (ruido de IntelliJ).
 
 ## Qué sigue
 
-- **Cerrar CAM-53:** usar `PhotoViewer` en `DefectsList.tsx` ("Ver foto" todavía
-  abre otra pestaña).
-- **Deuda de las revisiones (admin/backend):** `FinalizeWorkOrderModal` (carrera
-  entre quitar foto y finalizar; km con decimales/negativos, que el backend tampoco
-  valida); `WorkOrderService.update` deja editar OTs finalizadas/canceladas; los
-  modales del admin no retienen el foco con Tab; N+1 en `GET /api/work-orders`
-  (~5 queries por OT).
-- **Probar la cámara en un Android real** con el `accept="image/jpeg,image/png"`
-  nuevo (chofer y técnico).
-- **Limpiar o decidir las OTs de prueba** de CB299ZA/AI153CD.
-- **Pasarle a Tomás el script de técnicos** (`pepe`/`raul`, contraseña
-  `tecnico123`, más el fix del `CHECK` de `users.role`) para que pruebe CAM-60 en
-  `develop`. Guido se lo manda por WhatsApp.
-- **Próximo sprint: registro de usuarios según rol** (CAM-23) — Guido lo pidió
-  explícitamente para después, no en CAM-60.
-- **Siguen vigentes de antes:** router del frontend; proteger endpoints con el JWT
-  (sigue sin enforcement); cobertura de tests del backend (controllers,
-  `PhotoService`, mappers); CAM-21 vs. calendario; CAM-58, CAM-16 (contador),
-  CAM-25 (menores), CAM-52/53/54, CAM-57.
-- **Borrar las ramas ya mergeadas** (`feature-combined`,
-  `feature/CAM-14-ordenes-de-trabajo`, `feature/CAM-22`, `feature/CAM-67`,
-  `feature/CAM-68`) si el equipo quiere.
+- **Sprint 5, en este orden:** CAM-23 (usuarios y roles, incluye proteger
+  `/api/users`), CAM-30 (CI del backend), CAM-78 (tests del backend), CAM-32
+  (audio), CAM-75, CAM-74, CAM-77, CAM-53.
+- **Terminar de estimar con Tomás** CAM-30, 78 y 32, y **reestimar CAM-23** (creció
+  con la protección de `/api/users`); repartir las cards (hoy casi todas están
+  asignadas a Guido).
+- **CAM-78:** si la toma Guido se completa la descripción; si la toma Tomás, la
+  completa él.
+- **CAM-77:** se refina dentro del sprint.
+- **Arrancar desde `develop` actualizado** (los dos repos siguen parados en
+  `feature-combined`).
+- **Quedan en el backlog para el siguiente sprint:** CAM-73 (JWT en toda la API),
+  CAM-69 y CAM-70 (bloqueadas por CAM-73), CAM-76, CAM-52, CAM-65.
+- **Siguen vigentes de antes:** probar la cámara en un Android real; limpiar las OTs
+  de prueba de CB299ZA/AI153CD; pasarle a Tomás el script de técnicos; los modales
+  del admin no retienen el foco con Tab (sin card); router del frontend; borrar las
+  ramas ya mergeadas.
 
 ## Decisiones abiertas
 
-- **Nueva: ¿cancelar una programación en el calendario debería cancelar su OT?**
-  Hoy no. Replanificar ya no duplica, pero una programación cancelada deja su OT
-  abierta.
-- **Nueva: ¿CAM-69/CAM-70 siguen haciendo falta?** (vistas de todos los defectos y
-  mantenimientos para el técnico). Con "Mis órdenes" el técnico ve lo que tiene
-  asignado; falta decidir si también tiene que ver lo no asignado.
-- **Nueva: ¿el técnico debería poder ver/editar OTs de otros?** El filtro es de
-  UI; la API no restringe nada. Atado a proteger endpoints con JWT.
+- **Nueva: CAM-77, ¿cancelar una programación cancela su OT?** Entró al sprint; se
+  refina dentro de él.
+- **Nueva: CAM-31, ¿qué son los "campos configurables por vehículo"?** Se
+  interpretó como ítems del checklist por vehículo; confirmar con Tomás (la creó).
+- **Nueva: CAM-33 usa el viaje abierto como "chofer asignado"**, en vez de una
+  asignación fija chofer↔vehículo. Revisar si era eso lo que se quería.
+- **Nueva: épica CAM-7 figura como Finalizada con cards abiertas** (53, 74, 75, 76).
+  ¿Se reabre o se arma una épica aparte para la deuda de OTs?
+- **Nueva: ¿se cierra la épica CAM-9 (Dashboard)?** Ya no le quedan cards abiertas.
+- **Nueva: épicas CAM-8, CAM-9 y CAM-10 sin descripción.**
+- **Resuelta (2026-09-28): CAM-23 sin CAM-73.** Opción C: CAM-23 protege solo
+  `/api/users`; CAM-73 extiende el filtro al resto de la API en un sprint
+  siguiente.
+- **Resuelta: ¿el técnico puede ver OTs de otros?** No, solo ve lo que tiene
+  asignado (CAM-69, necesita CAM-73).
+- **Resuelta: ¿CAM-69/CAM-70 siguen haciendo falta?** Sí, reescritas con otro
+  enfoque (enforcement en la API y agenda con `plannedDate`).
 - **Paginación** (historial de vehículo y en general). Sin cambios.
 - **`workOrderId` de las completions:** parcialmente resuelta — las que registra
   una OT al finalizarse llevan su id real; las cargadas a mano siguen siendo texto
@@ -92,7 +90,8 @@ sueltas. La épica CAM-59 (vista de taller) tiene por primera vez contenido real
 - **Patrón "rama encadenada + PR en Draft"**: sigue sin formalizar.
 - **Convención `bugfix/` vs `feature/`**: falta que Tomás la adopte.
 - **Router del frontend.** Sin cambios.
-- **Autenticación en el resto de endpoints.** Sin cambios.
+- **Autenticación en el resto de endpoints:** ahora es una card concreta, CAM-73,
+  fuera del sprint 5.
 - **PRs de `feature/guido`.** Siguen abiertos sin contenido útil.
 - **Flujo de ramas/PRs formal.** Parcial; esta vez Guido mergeó él mismo
   `feature-combined` a `develop`.
@@ -321,6 +320,18 @@ Lo que se probó y no funcionó, con el motivo. Se agrega, no se reemplaza.
   `photoUrl` relativo a un archivo que no existe (`/uploads/photos/seed-placeholder-1.jpg`);
   en la vista del técnico se ve "No se pudo cargar la foto del defecto". No es un
   bug: los defectos reales guardan URL absoluta.
+- **2026-09-26** — El flujo de Jira del proyecto **no permite pasar una card de
+  "Tareas por hacer" a "Finalizada" en un solo paso**: hay que recorrer las
+  transiciones en orden, `2` (En refinamiento) → `3` (En curso) → `4` (Pendiente a
+  Integrar) → `5` (Finalizada), con un `transitionJiraIssue` por paso. Datos útiles
+  para editar Jira por API: los Story Points están en `customfield_10016`, y la
+  épica se asigna con `parent: {key}` (al crear, dentro de `additional_fields`;
+  al editar, en `fields`).
+- **2026-09-26** — No se reescribió por API la descripción de una card con imagen
+  embebida (CAM-65), para no repetir el problema del 2026-09-05 (la referencia a la
+  imagen se reescribe y no se puede confirmar si sigue viéndose). El refinamiento
+  se dejó como comentario y Guido lo pasó a mano a la descripción desde Jira,
+  conservando la captura.
 
 ## Historial
 
@@ -511,3 +522,11 @@ Una línea por sesión.
   documentado completo. Todo pasó por `revisor` (5 rondas), se pusheó, y Guido
   mergeó `feature-combined` a `develop` en los dos repos (#12, #19). Card CAM-60
   completada en Jira.
+- **2026-09-26/28** — Sesión de backlog, sin código. Cruzadas las 61 cards de Jira
+  contra el código de `develop`: CAM-17/38/39/54 pasadas a Finalizada (hechas o
+  repetidas), CAM-52/53/69/70 reescritas, decidido que el técnico solo ve lo que
+  tiene asignado. Creadas las épicas CAM-71 (Gestión de Flota) y CAM-72
+  (Infraestructura), reubicadas ~15 cards de épica, creadas CAM-73 a CAM-77 y
+  completadas las descripciones de 12 cards vacías o incompletas. Guido y Tomás
+  priorizaron el sprint 5 por Pareto (CAM-23 → CAM-53); decidido que CAM-23 protege
+  solo `/api/users` y CAM-73 extiende el filtro después.
