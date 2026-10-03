@@ -1,6 +1,6 @@
 # Estado — FleetGuard
 
-Última actualización: **2026-09-28**
+Última actualización: **2026-10-03**
 Se escribe con el ritual de `docs/guias/sesiones.md`, siempre con confirmación
 de Guido.
 
@@ -8,98 +8,102 @@ de Guido.
 
 ## Dónde estamos
 
-`develop` sigue igual que al cierre anterior en los dos repos (CAM-60 y todo
-`feature-combined` mergeado). La sesión del 2026-09-26/28 fue de **ordenar el
-backlog de Jira**, sin código. Después, Guido y Tomás **priorizaron el sprint 5
-por Pareto**: CAM-23, 30, 78, 32, 75, 74, 77 y 53, en ese orden.
+Sprint 5 en curso. Integrado y mergeado a `develop` el trabajo de Tomás de
+CAM-31/32/77/79/80/81 (PRs backend #15 y frontend #21, revisados y mergeados por
+Guido). Hechas en una sola rama, `feature/CAM-23-CAM-30-CAM-78`: **CAM-23**
+(usuarios y roles), **CAM-78** (tests del backend), **CAM-30** (CI) y el cambio de
+paquete raíz a `org.fleetguard`. PRs abiertos a `develop`: backend
+[fleet-maintenance#16](https://github.com/Tomas-Neira-Guitera/fleet-maintenance/pull/16)
+(CI en verde) y frontend
+[fleet-maintenance-fe#22](https://github.com/Tomas-Neira-Guitera/fleet-maintenance-fe/pull/22).
 
 ## En qué quedé
 
-- **Backlog de Jira reordenado (sin código):**
-  - **Pasadas a Finalizada**, con comentario de dónde está hecha cada una: CAM-17
-    (el cálculo de vencimientos ya existe en `MaintenanceStatusCalculator`), CAM-38
-    (repetida de CAM-20), CAM-39 (repetida de CAM-49), CAM-54 (hover del menú,
-    hecho en `2be2f89`).
-  - **Reescritas:** CAM-52 (vista de Gastos con `GET /api/expenses`), CAM-53
-    (visor de fotos en `DefectsList`), CAM-69 (el técnico solo accede a sus OTs,
-    con enforcement en la API), CAM-70 ("Mi agenda", con `plannedDate` en la OT).
-  - **Épicas nuevas:** CAM-71 "Gestión de Flota" (CAM-25, CAM-56) y CAM-72
-    "Infraestructura" (CAM-30, CAM-35).
-  - **Cards movidas de épica:** a CAM-8 (42, 57, 61, 24, 65), a CAM-9 (37, 38, 39,
-    40, 54), a CAM-7 (22, 53), a CAM-64 (52), a CAM-6 (55). CAM-58 queda sin
-    épica a propósito.
-- **Cards nuevas:** CAM-73 (proteger la API con el JWT), CAM-74 (validaciones al
-  finalizar una OT), CAM-75 (no editar OTs cerradas), CAM-76 (N+1 en
-  `/work-orders`), CAM-77 (cancelar una programación cancela su OT).
-- **Cards vacías o incompletas completadas** con la estructura estándar (historia,
-  Contexto, Alcance, Criterios, Depende de, Fuera de alcance, Contrato): CAM-19,
-  23, 24, 30, 31, 32, 33, 34, 55, 56, 58 y 65.
-- **Priorización del sprint 5 (Guido y Tomás, por Pareto):** CAM-23 → 30 → 78 →
-  32 → 75 → 74 → 77 → 53. CAM-78 "Test back" (cobertura de tests del backend) la
-  crearon ellos; CAM-32 pasó a llamarse "Cargas de descripciones por audio"; el
-  refinamiento de CAM-65 pasó del comentario a la descripción.
-- **CAM-23 y CAM-73 ajustadas (2026-09-28):** CAM-23 ahora también protege **solo
-  `/api/users`** (JWT + rol ADMIN, 401/403); CAM-73 extiende ese filtro al resto
-  de la API.
-- **Nada en los repos de código.** `.idea/misc.xml` sin commitear en el backend
-  (ruido de IntelliJ).
+- **CAM-23** (`3b185aa` backend, `ab54b25` frontend):
+  - `POST`/`PATCH /api/users`, `User.active` y login de usuario desactivado (403
+    `USER_INACTIVE`).
+  - `JwtAuthInterceptor`: protege solo `/api/users` (ADMIN activo, 401/403); el
+    usuario se busca en la base en cada pedido.
+  - Usernames con espacios y acentos, normalizados al guardar y al loguearse.
+  - Un admin no puede desactivarse ni quitarse el rol; un técnico con OTs abiertas
+    no cambia de rol; no se asignan OTs a técnicos desactivados.
+  - Frontend: pestaña Usuarios y aviso de sesión vencida (también en el selector
+    de técnico).
+  - Pasó por `revisor` tres veces.
+- **Paquete raíz `org.fleetguard`** (`1a1bed0`): Guido sacó el `example`. Se probó
+  `org` a secas y se descartó (rompe el escaneo de Spring). Commit de renombre
+  puro, verificado aislado.
+- **CAM-78** (`5f387f3`):
+  - 263 tests, 92,5% de líneas: services, controllers con `@WebMvcTest`, modelo y
+    storage.
+  - Se sacaron 11 tests de relleno en dos pasadas del `revisor`.
+  - Corrigió 6 bugs: path traversal en fotos; errores del cliente que daban 500
+    (ahora 400/404/405/415); ids mal formados que daban 500 (ahora 404, o lista
+    vacía en filtros); `intervalType` inválido y `maintenancePlanId` nulo;
+    paginación fuera de rango; foto sin content-type.
+- **CAM-30** (`cc7a953`):
+  - `.github/workflows/ci.yml` y JaCoCo con piso de 85% de líneas; `gradlew` pasó
+    a ejecutable.
+  - README con badge y sección "Tests y CI".
+  - Primera corrida en GitHub: verde.
+- **Documentación:** commit `186ce63` en `TIP - IA` (`PROJECT.md` y
+  `backend-AGENTS.md`: paquete nuevo y CI), **sin pushear**.
+- **Página para el profesor** con el criterio y una selección comentada de tests:
+  https://claude.ai/artifact/5NmEGMkKQwEMho9SdFrE5D (privada; hay que compartirla
+  desde su menú).
+- `.idea/misc.xml` sigue sin commitear en el backend (ruido de IntelliJ).
 
 ## Qué sigue
 
-- **Sprint 5, en este orden:** CAM-23 (usuarios y roles, incluye proteger
-  `/api/users`), CAM-30 (CI del backend), CAM-78 (tests del backend), CAM-32
-  (audio), CAM-75, CAM-74, CAM-77, CAM-53.
-- **Terminar de estimar con Tomás** CAM-30, 78 y 32, y **reestimar CAM-23** (creció
-  con la protección de `/api/users`); repartir las cards (hoy casi todas están
-  asignadas a Guido).
-- **CAM-78:** si la toma Guido se completa la descripción; si la toma Tomás, la
-  completa él.
-- **CAM-77:** se refina dentro del sprint.
-- **Arrancar desde `develop` actualizado** (los dos repos siguen parados en
-  `feature-combined`).
-- **Quedan en el backlog para el siguiente sprint:** CAM-73 (JWT en toda la API),
-  CAM-69 y CAM-70 (bloqueadas por CAM-73), CAM-76, CAM-52, CAM-65.
-- **Siguen vigentes de antes:** probar la cámara en un Android real; limpiar las OTs
-  de prueba de CB299ZA/AI153CD; pasarle a Tomás el script de técnicos; los modales
-  del admin no retienen el foco con Tab (sin card); router del frontend; borrar las
-  ramas ya mergeadas.
+- **Que Tomás revise y mergee #16 y fe#22 cuanto antes:** el cambio de paquete toca
+  casi todo el backend, así que sus ramas abiertas van a chocar. Después, que
+  actualice sus ramas desde `develop`.
+- **Jira:** pasar CAM-23, CAM-30 y CAM-78 a "Pendiente a Integrar", y a
+  "Finalizada" cuando se mergeen. Confirmar el estado de CAM-77 y CAM-32 (las hizo
+  Tomás).
+- **Sprint 5, lo que queda:** CAM-75 (no editar OTs cerradas), CAM-74 (validaciones
+  al finalizar una OT), CAM-53.
+- **Pushear `TIP - IA`:** el commit `186ce63` junto con el de estado.
+- **Reactivar en Chrome el aviso de contraseñas filtradas**
+  (`chrome://settings/security`); quedó apagado desde el 2026-09-24.
+- **Limpiar usuarios de prueba** de la base local: `tecnico3`, `tecnico4`,
+  "José Muñoz" y "jose muñoz".
+- **Siguen vigentes de antes:** CAM-73 (JWT en toda la API), CAM-69/70, CAM-76,
+  CAM-52, CAM-65; probar la cámara en un Android real; limpiar las OTs de prueba;
+  foco de los modales del admin; router del frontend; borrar las ramas ya
+  mergeadas.
 
 ## Decisiones abiertas
 
-- **Nueva: CAM-77, ¿cancelar una programación cancela su OT?** Entró al sprint; se
-  refina dentro de él.
-- **Nueva: CAM-31, ¿qué son los "campos configurables por vehículo"?** Se
-  interpretó como ítems del checklist por vehículo; confirmar con Tomás (la creó).
-- **Nueva: CAM-33 usa el viaje abierto como "chofer asignado"**, en vez de una
-  asignación fija chofer↔vehículo. Revisar si era eso lo que se quería.
-- **Nueva: épica CAM-7 figura como Finalizada con cards abiertas** (53, 74, 75, 76).
-  ¿Se reabre o se arma una épica aparte para la deuda de OTs?
-- **Nueva: ¿se cierra la épica CAM-9 (Dashboard)?** Ya no le quedan cards abiertas.
-- **Nueva: épicas CAM-8, CAM-9 y CAM-10 sin descripción.**
-- **Resuelta (2026-09-28): CAM-23 sin CAM-73.** Opción C: CAM-23 protege solo
-  `/api/users`; CAM-73 extiende el filtro al resto de la API en un sprint
-  siguiente.
-- **Resuelta: ¿el técnico puede ver OTs de otros?** No, solo ve lo que tiene
-  asignado (CAM-69, necesita CAM-73).
-- **Resuelta: ¿CAM-69/CAM-70 siguen haciendo falta?** Sí, reescritas con otro
-  enfoque (enforcement en la API y agenda con `plannedDate`).
-- **Paginación** (historial de vehículo y en general). Sin cambios.
-- **`workOrderId` de las completions:** parcialmente resuelta — las que registra
-  una OT al finalizarse llevan su id real; las cargadas a mano siguen siendo texto
-  libre.
-- **Patrón "rama encadenada + PR en Draft"**: sigue sin formalizar.
-- **Convención `bugfix/` vs `feature/`**: falta que Tomás la adopte.
-- **Router del frontend.** Sin cambios.
-- **Autenticación en el resto de endpoints:** ahora es una card concreta, CAM-73,
-  fuera del sprint 5.
-- **PRs de `feature/guido`.** Siguen abiertos sin contenido útil.
-- **Flujo de ramas/PRs formal.** Parcial; esta vez Guido mergeó él mismo
-  `feature-combined` a `develop`.
-- **Cómo mantener `STATE.md` al día cuando Tomás mergea sin el ritual.** Sin
-  cambios.
-- **`ddl-auto: update` no retroactiva constraints.** Sin cambios.
-- **Forma del error de la API, modelo de datos / versionado de schema, CAM-21,
-  CAM-66.** Sin cambios.
+- **Nueva: ¿regla de protección de rama en `develop`** para que el CI en rojo
+  bloquee el merge? La tiene que activar Tomás (admin del repo); estaba fuera del
+  alcance de CAM-30.
+- **Nueva: ¿card de CI para el frontend?** (`npm ci`, `oxlint`, `npm run build`);
+  estaba fuera del alcance de CAM-30.
+- **Nueva: unicidad del username con acentos.** Que "JOSÉ" choque con "José"
+  depende del `LC_CTYPE` de la base; en la de Guido sí choca. Falta confirmarlo en
+  la de Tomás.
+- **Nueva (aceptada, documentada):** resetear la contraseña no invalida tokens ya
+  emitidos; para cortar el acceso al instante hay que desactivar al usuario.
+- **Resuelta: CAM-77, ¿cancelar una programación cancela su OT?** Sí; con la OT en
+  curso pide confirmación (lo implementó Tomás).
+- **Resuelta: CAM-31, "campos configurables por vehículo".** Son ítems del
+  checklist por vehículo (lo implementó Tomás).
+- **Siguen de antes:**
+  - CAM-33 y el "chofer asignado".
+  - Estado de las épicas CAM-7 y CAM-9, y descripciones de CAM-8/9/10.
+  - Paginación general.
+  - `workOrderId` de las completions cargadas a mano.
+  - Patrón "rama encadenada + PR en Draft".
+  - Convención `bugfix/` vs `feature/` con Tomás.
+  - Router del frontend.
+  - PRs viejos de `feature/guido`.
+  - Flujo formal de ramas/PRs.
+  - `STATE.md` cuando Tomás mergea sin ritual.
+  - `ddl-auto`.
+  - Forma del error de la API: parcialmente resuelta, ahora documentada en
+    `ApiError`.
+  - Versionado de schema, CAM-21, CAM-66.
 
 ## Callejones sin salida
 
@@ -332,6 +336,31 @@ Lo que se probó y no funcionó, con el motivo. Se agrega, no se reemplaza.
   imagen se reescribe y no se puede confirmar si sigue viéndose). El refinamiento
   se dejó como comentario y Guido lo pasó a mano a la descripción desde Jira,
   conservando la captura.
+- **2026-10-03** — El paquete raíz `org` a secas rompe Spring. `@SpringBootApplication`
+  escanea el paquete de la clase de arranque y todos sus subpaquetes, así que
+  barría `org.springframework.*` y el contexto no levantaba
+  (`ConflictingBeanDefinitionException` con `ProblemDetailsExceptionHandler`). Se
+  resolvió con un paquete propio, `org.fleetguard`.
+- **2026-10-03** — Repetición del callejón del 2026-09-03. El backend levantado desde
+  IntelliJ seguía con el código anterior al cambio de usernames (arrancó 01:49, el
+  cambio fue 01:54) y mostraba el mensaje de error viejo. Ante un comportamiento
+  que no coincide con el código, revisar a qué hora arrancó el proceso y
+  reiniciarlo.
+- **2026-10-03** — El lanzador de servidores del Code tab no soporta rutas con
+  espacios ("TIP - Backend"). Para el backend sirvió la ruta corta de Windows
+  (`TIP-BA~1\gradlew.bat -p TIP-BA~1 bootRun`). Para el frontend la ruta corta no
+  sirve, porque Vite la rechaza como fuera de su allow list; anduvo un `.cmd` en
+  una carpeta sin espacios que hace `cd /d` a la ruta larga y `npm run dev`.
+- **2026-10-03** — `curl` desde Bash en Windows manda la "ñ" en Latin-1 y Jackson
+  rechaza el JSON (parecía un 500 del backend). Para probar con acentos, escribir
+  el JSON a un archivo con Node y mandarlo con `--data-binary @archivo`.
+- **2026-10-03** — `gradlew` estaba commiteado sin permiso de ejecución (100644). En
+  el runner Linux de GitHub hubiera fallado con "permission denied". Se corrigió
+  con `git update-index --chmod=+x gradlew`.
+- **2026-10-03** — En Mockito, re-stubbear con `when(mock.metodo())` un mock que ya
+  tira una excepción la dispara durante el propio stubbing; hay que usar
+  `doThrow(...).when(mock)`. Y armar un stub adentro del `thenReturn(...)` de otro
+  (stubbing anidado) también falla: hay que sacarlo a una variable antes.
 
 ## Historial
 
@@ -530,3 +559,10 @@ Una línea por sesión.
   completadas las descripciones de 12 cards vacías o incompletas. Guido y Tomás
   priorizaron el sprint 5 por Pareto (CAM-23 → CAM-53); decidido que CAM-23 protege
   solo `/api/users` y CAM-73 extiende el filtro después.
+- **2026-10-03** — Revisados y mergeados los PRs de Tomás de CAM-31/32/77/79/80/81
+  (#15, fe#21). En `feature/CAM-23-CAM-30-CAM-78`: CAM-23 (usuarios y roles,
+  `/api/users` con JWT, usernames con espacios y acentos), el paquete raíz
+  `org.fleetguard`, CAM-78 (263 tests, 92,5% de líneas, 6 bugs corregidos, 11 tests
+  de relleno descartados) y CAM-30 (GitHub Actions y JaCoCo con piso de 85%). Todo
+  pasó por `revisor` (5 rondas). PRs #16 (CI verde) y fe#22 abiertos a `develop`.
+  Página con la selección de tests para el profesor.
