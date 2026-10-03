@@ -25,10 +25,13 @@ Migrado a Spring Boot el 2026-08-31 (ver el porqué en `docs/PROJECT.md`).
 ## Estructura hoy
 
 Package-by-layer, heredada de la migración de Tomás (CAM-11) sobre el molde de
-capas que ya existía:
+capas que ya existía. El paquete raíz es `org.fleetguard` (era `org.example` hasta
+el 2026-10-03, ver `docs/PROJECT.md`). Tiene que ser un paquete propio: con uno
+genérico como `org` a secas, el escaneo de componentes de Spring barre también las
+librerías y la app no levanta.
 
 ```
-src/main/java/org/example/
+src/main/java/org/fleetguard/
 ├── FleetGuardApplication.java   # entry point Spring Boot
 ├── controller/                  # @RestController: bind/validación HTTP, delegan a service/
 ├── service/                     # lógica de negocio (casos de uso)

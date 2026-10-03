@@ -49,6 +49,20 @@ Code, y desde donde se accede a los otros dos como directorios adicionales
 
 ## Decisiones y por qué
 
+**Paquete raíz `org.fleetguard` en el backend, desde 2026-10-03.** Reemplaza
+`org.example`, que era el nombre por defecto de la plantilla de IntelliJ con la que
+arrancó el proyecto y no decía nada del sistema. Guido hizo el cambio en
+`feature/CAM-23-CAM-30-CAM-78`. Se probó primero dejar el paquete raíz en `org` a
+secas y se descartó: `@SpringBootApplication` escanea el paquete de la clase de
+arranque y todos sus subpaquetes, así que con `org` barría también
+`org.springframework.*`, `org.hibernate.*`, etc., registraba clases internas de
+Spring como beans propios y el contexto no levantaba (`ConflictingBeanDefinitionException`
+con `ProblemDetailsExceptionHandler`). El paquete raíz tiene que ser propio del
+proyecto, que no comparta ninguna librería. Costo aceptado: el cambio toca los ~200
+archivos del backend, así que cualquier rama abierta en ese momento choca con esta al
+mergear; conviene mergearla primero y que las demás ramas se actualicen desde
+`develop`.
+
 **Documentación de IA y `.claude/` en un tercer repo (`fleet-maintenance-ia`),
 desde 2026-09-05.** Reemplaza las decisiones de que "la documentación
 compartida vive en `fleet-maintenance/docs/`" y de que "el backend es la casa
@@ -178,9 +192,10 @@ que se repite idéntico muchas veces, ahí se evalúa convertirla.
 
 ## Convenciones
 
-- Java: paquete `org.example`, package-by-layer (ver `backend-AGENTS.md`).
+- Java: paquete raíz `org.fleetguard`, package-by-layer (ver `backend-AGENTS.md`).
 - Frontend: Oxlint como linter, TypeScript estricto vía `tsc -b` en el build.
-- Sin CI/CD todavía. Sin convención de nombres de commit todavía.
+- CI en el backend desde CAM-30 (GitHub Actions: build, tests y coverage mínimo de
+  85% de líneas); sin CI en el frontend ni CD. Sin convención de nombres de commit todavía.
 - **Ramas y PRs, desde 2026-08-31.** Ya no es rama única sin PRs: hay `main`,
   `develop` y ramas de feature (`feature/guido`, `feature/CAM-11-dvir-checklist`)
   en los dos repos, con PRs de feature branches hacia `develop`/`main` en
