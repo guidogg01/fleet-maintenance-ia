@@ -72,11 +72,22 @@ Nunca hardcodeada en un componente.
 **Los tipos de las respuestas se escriben a mano** en `types/domain.ts`,
 siguiendo el contrato (no hay generación automática de tipos todavía).
 
-**Dependencias nuevas: proponelas, no las instales.** Todavía no hay router,
-ni librería de estado, ni de componentes — cada una de esas es una decisión a
-tomar cuando haga falta, no antes. Sí hay ya una capa de diseño propia
+**Dependencias nuevas: proponelas, no las instales.** Todavía no hay librería
+de estado ni de componentes — cada una de esas es una decisión a tomar cuando
+haga falta, no antes. Sí hay ya una capa de diseño propia
 (`styles/tokens.css`, paleta "Cuidado preventivo") — no traer una librería de
 estilos/componentes que la reemplace sin proponerlo antes.
+
+**Ruteo propio, sin librería (CAM-82, desde 2026-10-03).** Solo la vista del
+admin vive en la URL (`/resumen`, `/vehiculos`, `/vehiculos/{id}`, `/planes`,
+`/ordenes-trabajo`, `/usuarios`, `/defectos`), con `hooks/useAdminRoute.ts`
+sobre la History API. Fue una decisión, no un faltante: son pocas rutas
+planas y no justifican react-router — si algún día hacen falta rutas
+anidadas o loaders, se propone. Chofer y técnico siguen en `/`: sus flujos
+tienen datos a medio cargar que una recarga perdería igual. Para desplegar,
+el hosting tiene que devolver `index.html` en cualquier ruta (fallback de
+SPA, como ya hacen `vite dev` y `vite preview`), y `base` en
+`vite.config.ts` se queda en `/` — con `./` se rompen las rutas profundas.
 
 **Todo cambio pasa por `npm run lint` y `npm run build`** antes de darse por
 terminado. El build corre `tsc -b`, así que un error de tipos lo frena.
