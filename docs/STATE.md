@@ -8,101 +8,90 @@ de Guido.
 
 ## Dónde estamos
 
-Sprint 5 en curso. Integrado y mergeado a `develop` el trabajo de Tomás de
-CAM-31/32/77/79/80/81 (PRs backend #15 y frontend #21, revisados y mergeados por
-Guido). Hechas en una sola rama, `feature/CAM-23-CAM-30-CAM-78`: **CAM-23**
-(usuarios y roles), **CAM-78** (tests del backend), **CAM-30** (CI) y el cambio de
-paquete raíz a `org.fleetguard`. PRs abiertos a `develop`: backend
-[fleet-maintenance#16](https://github.com/Tomas-Neira-Guitera/fleet-maintenance/pull/16)
-(CI en verde) y frontend
-[fleet-maintenance-fe#22](https://github.com/Tomas-Neira-Guitera/fleet-maintenance-fe/pull/22).
+Sprint 5: todas las cards de Guido están hechas y mergeadas a `develop`. Hoy entraron
+CAM-23/30/78 (#16, fe#22), CAM-75 y CAM-74 (#17, #18, fe#23, fe#26), CAM-82 (fe#24) y
+CAM-53 (fe#25). `develop` está verificado de punta a punta: 267 tests, CI en verde y la
+app andando. De Guido en el sprint solo queda confirmar CAM-83 (documento del Release 1).
 
 ## En qué quedé
 
-- **CAM-23** (`3b185aa` backend, `ab54b25` frontend):
-  - `POST`/`PATCH /api/users`, `User.active` y login de usuario desactivado (403
-    `USER_INACTIVE`).
-  - `JwtAuthInterceptor`: protege solo `/api/users` (ADMIN activo, 401/403); el
-    usuario se busca en la base en cada pedido.
-  - Usernames con espacios y acentos, normalizados al guardar y al loguearse.
-  - Un admin no puede desactivarse ni quitarse el rol; un técnico con OTs abiertas
-    no cambia de rol; no se asignan OTs a técnicos desactivados.
-  - Frontend: pestaña Usuarios y aviso de sesión vencida (también en el selector
-    de técnico).
-  - Pasó por `revisor` tres veces.
-- **Paquete raíz `org.fleetguard`** (`1a1bed0`): Guido sacó el `example`. Se probó
-  `org` a secas y se descartó (rompe el escaneo de Spring). Commit de renombre
-  puro, verificado aislado.
-- **CAM-78** (`5f387f3`):
-  - 263 tests, 92,5% de líneas: services, controllers con `@WebMvcTest`, modelo y
-    storage.
-  - Se sacaron 11 tests de relleno en dos pasadas del `revisor`.
-  - Corrigió 6 bugs: path traversal en fotos; errores del cliente que daban 500
-    (ahora 400/404/405/415); ids mal formados que daban 500 (ahora 404, o lista
-    vacía en filtros); `intervalType` inválido y `maintenancePlanId` nulo;
-    paginación fuera de rango; foto sin content-type.
-- **CAM-30** (`cc7a953`):
-  - `.github/workflows/ci.yml` y JaCoCo con piso de 85% de líneas; `gradlew` pasó
-    a ejecutable.
-  - README con badge y sección "Tests y CI".
-  - Primera corrida en GitHub: verde.
-- **Documentación:** commit `186ce63` en `TIP - IA` (`PROJECT.md` y
-  `backend-AGENTS.md`: paquete nuevo y CI), **sin pushear**.
-- **Página para el profesor** con el criterio y una selección comentada de tests:
-  https://claude.ai/artifact/5NmEGMkKQwEMho9SdFrE5D (privada; hay que compartirla
-  desde su menú).
-- `.idea/misc.xml` sigue sin commitear en el backend (ruido de IntelliJ).
+- **CAM-75** (`c768f57`): `PATCH /work-orders/{id}` sobre una OT finalizada o cancelada
+  responde 409 `WORK_ORDER_CLOSED`, tanto para editar datos como para cambiar el estado.
+  En el frontend no hubo que tocar nada: `WorkOrderDetailModal` ya era de solo lectura
+  para OTs cerradas.
+- **CAM-74**:
+  - Backend (`10e7f11`, `e47d580`):
+    - `completedKm` pasó a `BigDecimal`, porque con `Long` Jackson truncaba los decimales.
+    - Valida que sea entero, no negativo y no menor al odómetro, y responde 422 con
+      detalle en `completedKm`. Decidido con Guido: 422, no el 400 que pedía la card.
+  - Frontend (`3fea839`, `91bb8b4`):
+    - El modal de finalizar del admin valida el km y bloquea mientras hay fotos subiendo
+      o borrándose.
+    - Se muestra el detalle de los 422 con `describeApiError`, que pasó a `apiClient.ts`.
+- **CAM-82** (`5b7aaf9`): la vista del admin vive en la URL.
+  - Ruteo propio en `hooks/useAdminRoute.ts` con la History API, sin dependencias, y solo
+    para el admin.
+  - Rutas: `/resumen`, `/vehiculos`, `/vehiculos/{id}`, `/planes`, `/ordenes-trabajo`,
+    `/usuarios`, `/defectos`.
+  - El id de la URL se valida contra `[A-Za-z0-9-]`.
+  - `frontend-AGENTS.md` actualizado (`653cbcf` en `TIP - IA`, se pushea con este commit
+    de estado).
+- **CAM-53** (`2948e55`): "Ver foto" en Defectos abre `PhotoViewer` en la misma página.
+  `PhotoViewer` muestra "No se pudo cargar la foto." si falla.
+- Todo pasó por `revisor`, en 7 rondas.
+- **Sin probar con sesión de admin:** la navegación de CAM-82 y la foto en la pantalla de
+  Defectos. Sí se probaron la traducción URL↔pantalla, el visor suelto y la API.
+- `.idea/misc.xml` sigue sin commitear en el backend.
 
 ## Qué sigue
 
-- **Que Tomás revise y mergee #16 y fe#22 cuanto antes:** el cambio de paquete toca
-  casi todo el backend, así que sus ramas abiertas van a chocar. Después, que
-  actualice sus ramas desde `develop`.
-- **Jira:** pasar CAM-23, CAM-30 y CAM-78 a "Pendiente a Integrar", y a
-  "Finalizada" cuando se mergeen. Confirmar el estado de CAM-77 y CAM-32 (las hizo
-  Tomás).
-- **Sprint 5, lo que queda:** CAM-75 (no editar OTs cerradas), CAM-74 (validaciones
-  al finalizar una OT), CAM-53.
-- **Pushear `TIP - IA`:** el commit `186ce63` junto con el de estado.
-- **Reactivar en Chrome el aviso de contraseñas filtradas**
-  (`chrome://settings/security`); quedó apagado desde el 2026-09-24.
-- **Limpiar usuarios de prueba** de la base local: `tecnico3`, `tecnico4`,
-  "José Muñoz" y "jose muñoz".
-- **Siguen vigentes de antes:** CAM-73 (JWT en toda la API), CAM-69/70, CAM-76,
-  CAM-52, CAM-65; probar la cámara en un Android real; limpiar las OTs de prueba;
-  foco de los modales del admin; router del frontend; borrar las ramas ya
-  mergeadas.
+- **Probar con sesión de admin en el navegador:** CAM-82 (pestañas, detalle,
+  atrás/adelante, recarga) y CAM-53 (foto rota de CB299ZA → mensaje).
+- **Reiniciar el backend de IntelliJ:** arrancó a las 12:47, antes de que se mergearan
+  CAM-74 y CAM-75.
+- **Jira:**
+  - Confirmar CAM-83.
+  - Avisar a Tomás que actualice sus ramas desde `develop`, por el cambio de paquete.
+- **Cards nuevas para proponer** (salieron de las revisiones y quedaron afuera a
+  propósito):
+  - Las fotos subidas en `FinalizeWorkOrderModal` no llegan al detalle si se cancela.
+  - Unificar `WORK_ORDER_FINALIZED` (gastos) con `WORK_ORDER_CLOSED` (fotos y PATCH).
+  - Con atrás, un modal con cambios sin guardar se cierra sin preguntar.
+- **Borrar ramas mergeadas:** `feature/CAM-23-CAM-30-CAM-78`, `feature/CAM-74` (en los
+  dos repos), `feature/CAM-82`, `feature/CAM-53`, y `feature/CAM-75`, que es solo local.
+- **Siguen vigentes de antes:**
+  - CAM-73 (JWT en toda la API), CAM-69/70, CAM-76, CAM-52, CAM-65.
+  - Reactivar el aviso de contraseñas filtradas de Chrome.
+  - Limpiar los usuarios de prueba (`tecnico3`, `tecnico4`, "José Muñoz", "jose muñoz")
+    y las OTs de prueba.
+  - Probar la cámara en un Android real.
+  - Foco de los modales del admin.
 
 ## Decisiones abiertas
 
-- **Nueva: ¿regla de protección de rama en `develop`** para que el CI en rojo
-  bloquee el merge? La tiene que activar Tomás (admin del repo); estaba fuera del
-  alcance de CAM-30.
-- **Nueva: ¿card de CI para el frontend?** (`npm ci`, `oxlint`, `npm run build`);
-  estaba fuera del alcance de CAM-30.
-- **Nueva: unicidad del username con acentos.** Que "JOSÉ" choque con "José"
-  depende del `LC_CTYPE` de la base; en la de Guido sí choca. Falta confirmarlo en
-  la de Tomás.
-- **Nueva (aceptada, documentada):** resetear la contraseña no invalida tokens ya
-  emitidos; para cortar el acceso al instante hay que desactivar al usuario.
-- **Resuelta: CAM-77, ¿cancelar una programación cancela su OT?** Sí; con la OT en
-  curso pide confirmación (lo implementó Tomás).
-- **Resuelta: CAM-31, "campos configurables por vehículo".** Son ítems del
-  checklist por vehículo (lo implementó Tomás).
+- **Resuelta: router del frontend.** Es ruteo propio sin librería, solo para el admin
+  (CAM-82). Chofer y técnico siguen en `/`. Documentado en `frontend-AGENTS.md`, junto con
+  el requisito de fallback de SPA para desplegar.
+- **Resuelta: km inválido al finalizar.** Responde 422 con detalle por campo, no 400. Se
+  mantiene la convención de la API.
+- **Nueva (aceptada, documentada en fe#24):** si un admin cierra sesión y entra un chofer
+  en la misma pestaña, atrás puede cambiar la URL sin cambiar la pantalla; recargar lo
+  corrige.
 - **Siguen de antes:**
+  - Protección de rama en `develop` con CI obligatorio (la activa Tomás).
+  - Card de CI para el frontend.
+  - Unicidad del username con acentos en la base de Tomás.
+  - Resetear la contraseña no invalida tokens ya emitidos (aceptado).
   - CAM-33 y el "chofer asignado".
-  - Estado de las épicas CAM-7 y CAM-9, y descripciones de CAM-8/9/10.
+  - Épicas CAM-7 y CAM-9.
   - Paginación general.
   - `workOrderId` de las completions cargadas a mano.
-  - Patrón "rama encadenada + PR en Draft".
-  - Convención `bugfix/` vs `feature/` con Tomás.
-  - Router del frontend.
+  - Ramas encadenadas.
+  - `bugfix/` vs `feature/`.
   - PRs viejos de `feature/guido`.
-  - Flujo formal de ramas/PRs.
+  - Flujo formal de ramas y PRs.
   - `STATE.md` cuando Tomás mergea sin ritual.
   - `ddl-auto`.
-  - Forma del error de la API: parcialmente resuelta, ahora documentada en
-    `ApiError`.
   - Versionado de schema, CAM-21, CAM-66.
 
 ## Callejones sin salida
@@ -361,6 +350,24 @@ Lo que se probó y no funcionó, con el motivo. Se agrega, no se reemplaza.
   tira una excepción la dispara durante el propio stubbing; hay que usar
   `doThrow(...).when(mock)`. Y armar un stub adentro del `thenReturn(...)` de otro
   (stubbing anidado) también falla: hay que sacarlo a una variable antes.
+- **2026-10-03** — #17 y fe#23 se mergearon antes de que se pushearan a sus ramas las
+  correcciones de `revisor`. Los commits quedaron en las ramas, fuera de `develop`, y hubo
+  que abrir PRs nuevos (#18, fe#26). Después de mergear un PR, cualquier push a esa rama no
+  entra solo. Para confirmar si un commit llegó:
+  `git merge-base --is-ancestor <sha> origin/develop`.
+- **2026-10-03** — Con un campo `Long`, Jackson convierte `1500.7` en `1500` sin avisar,
+  porque `ACCEPT_FLOAT_AS_INT` viene activado. Para rechazar decimales hay que recibir
+  `BigDecimal`. Y con `BigDecimal`, no usar `remainder(BigDecimal.ONE)` para detectar
+  decimales: con `1e100000`, 8 caracteres que Jackson acepta, traba el hilo unos 7
+  segundos. Usar `stripTrailingZeros().scale() > 0` y `longValueExact()`.
+- **2026-10-03** — En un `.cmd` del lanzador, `cd /d` a la carpeta del backend no tuvo
+  efecto ("gradlew.bat no se reconoce"), ni con CRLF ni con la ruta corta. Anduvo
+  `call <ruta corta>\gradlew.bat -p <ruta corta> bootRun`. Para el frontend sí anduvo
+  `cd /d "<ruta larga>"` + `npx vite`. Además, la herramienta Write deja los `.cmd` en LF,
+  así que hay que pasarlos a CRLF.
+- **2026-10-03** — Cambiar de rama en `TIP - Frontend` cambia lo que sirve el Vite de
+  Guido, porque corre desde la misma carpeta. Para probar sin pisarle nada, se usó una
+  copia aparte en 8081/5174.
 
 ## Historial
 
@@ -566,3 +573,9 @@ Una línea por sesión.
   de relleno descartados) y CAM-30 (GitHub Actions y JaCoCo con piso de 85%). Todo
   pasó por `revisor` (5 rondas). PRs #16 (CI verde) y fe#22 abiertos a `develop`.
   Página con la selección de tests para el profesor.
+- **2026-10-03** (continuación) — CAM-75 (OTs cerradas de solo lectura, 409), CAM-74
+  (validación del km con 422 y fotos en curso), CAM-82 (ruteo propio del admin en la URL) y
+  CAM-53 (foto del defecto en la misma página). Todo pasó por `revisor` en 7 rondas y está
+  mergeado a `develop` (#17, #18, fe#23–26). Se recuperaron con PRs nuevos dos correcciones
+  que habían quedado afuera de un merge temprano, y `develop` quedó verificado con build,
+  tests, CI y la app andando.
