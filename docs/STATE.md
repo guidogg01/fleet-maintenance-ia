@@ -1,6 +1,6 @@
 # Estado — FleetGuard
 
-Última actualización: **2026-10-03**
+Última actualización: **2026-10-12**
 Se escribe con el ritual de `docs/guias/sesiones.md`, siempre con confirmación
 de Guido.
 
@@ -8,91 +8,102 @@ de Guido.
 
 ## Dónde estamos
 
-Sprint 5: todas las cards de Guido están hechas y mergeadas a `develop`. Hoy entraron
-CAM-23/30/78 (#16, fe#22), CAM-75 y CAM-74 (#17, #18, fe#23, fe#26), CAM-82 (fe#24) y
-CAM-53 (fe#25). `develop` está verificado de punta a punta: 267 tests, CI en verde y la
-app andando. De Guido en el sprint solo queda confirmar CAM-83 (documento del Release 1).
+El Sprint 5 cerró. Todas las cards de Guido de ese sprint están en `develop`: CAM-93, 84, 88, 92
+y 90, que entraron con una release por repo (backend #20, frontend #28). Las de Tomás también:
+CAM-52, 85, 86, 87, 89, 91 y 94 (#19, fe#27). Ahora está activo el **Sprint 7 - Entrega 2**
+(hasta el 17/10). La base local tiene cargado el seed de demo de Tomás.
 
 ## En qué quedé
 
-- **CAM-75** (`c768f57`): `PATCH /work-orders/{id}` sobre una OT finalizada o cancelada
-  responde 409 `WORK_ORDER_CLOSED`, tanto para editar datos como para cambiar el estado.
-  En el frontend no hubo que tocar nada: `WorkOrderDetailModal` ya era de solo lectura
-  para OTs cerradas.
-- **CAM-74**:
-  - Backend (`10e7f11`, `e47d580`):
-    - `completedKm` pasó a `BigDecimal`, porque con `Long` Jackson truncaba los decimales.
-    - Valida que sea entero, no negativo y no menor al odómetro, y responde 422 con
-      detalle en `completedKm`. Decidido con Guido: 422, no el 400 que pedía la card.
-  - Frontend (`3fea839`, `91bb8b4`):
-    - El modal de finalizar del admin valida el km y bloquea mientras hay fotos subiendo
-      o borrándose.
-    - Se muestra el detalle de los 422 con `describeApiError`, que pasó a `apiClient.ts`.
-- **CAM-82** (`5b7aaf9`): la vista del admin vive en la URL.
-  - Ruteo propio en `hooks/useAdminRoute.ts` con la History API, sin dependencias, y solo
-    para el admin.
-  - Rutas: `/resumen`, `/vehiculos`, `/vehiculos/{id}`, `/planes`, `/ordenes-trabajo`,
-    `/usuarios`, `/defectos`.
-  - El id de la URL se valida contra `[A-Za-z0-9-]`.
-  - `frontend-AGENTS.md` actualizado (`653cbcf` en `TIP - IA`, se pushea con este commit
-    de estado).
-- **CAM-53** (`2948e55`): "Ver foto" en Defectos abre `PhotoViewer` en la misma página.
-  `PhotoViewer` muestra "No se pudo cargar la foto." si falla.
-- Todo pasó por `revisor`, en 7 rondas.
-- **Sin probar con sesión de admin:** la navegación de CAM-82 y la foto en la pantalla de
-  Defectos. Sí se probaron la traducción URL↔pantalla, el visor suelto y la API.
-- `.idea/misc.xml` sigue sin commitear en el backend.
+- **Nuevo flujo de ramas (2026-10-12):**
+  - Las cards de Guido se trabajan en `feature/CAM-XX`, salen de una release por sprint y se
+    mergean **directo, sin PR**, a esa release.
+  - Al final del sprint va **un solo PR** de la release a `develop`.
+  - La del Sprint 5 fue `release/guido-sprint-5`, en los dos repos; ya se mergeó y se borró.
+- **CAM-93** (frontend): "Desactivar plan" se movió de la lista al modal de "Editar". El botón es
+  neutro y se pone rojo al pasar el mouse. Si otro admin ya lo había desactivado
+  (`PLAN_INACTIVE`), se trata como hecho.
+- **CAM-84** (frontend): los botones "Dictar" y "Adjuntar foto" usan el color principal. Mientras
+  escucha, el dictado dice "Detener". Aplica también a "Sacar foto" del técnico.
+- **CAM-88** (frontend): el calendario agrupa y pide los turnos por día local
+  (`utils/localDate.ts`), así lo programado desde las 21:00 ya no cae al día siguiente.
+- **CAM-92** (frontend): filtro por fecha de creación en Órdenes de trabajo. Después se unificó
+  con lo de Tomás:
+  - OTs usa su `PeriodFilter`, con "Todas las fechas" y el texto "Creadas:".
+  - `utils/period.ts` es la única fuente de los períodos.
+  - Se corrigió "Últimos 3 meses" los días 29, 30 y 31, también en Gastos y Usuarios.
+- **CAM-90** (backend): el km del vehículo avanza solo con las inspecciones, las OTs finalizadas
+  y los mantenimientos hechos (`service/OdometerReadings`).
+  - Tope de salto: `fleetguard.odometer.max-jump-km: 5000`.
+  - Un vehículo dado de baja no cambia su km.
+  - Contrato en `CAM-40-fleet-status-contract.md` y `openapi.yaml`.
+- **CAM-85 se descartó sin pushear**, porque la hizo Tomás para CAM-87. Hay un respaldo en un
+  parche local.
+- **Seed de demo cargado** (`docs/db/seed-demo.sql`, de Tomás):
+  - 10 camiones, 177 OTs y 46 defectos, con sus fotos copiadas a `uploads/photos`.
+  - Usuarios: `admin`, 5 choferes y 2 técnicos (lista y contraseñas en el encabezado del
+    archivo).
+  - Ya no existe `chofer`, y se borraron los usuarios de prueba viejos.
+- **Jira:**
+  - Nueva épica **CAM-95 Notificaciones**, con CAM-96 a CAM-103; CAM-19 se movió ahí.
+  - Gastos: **CAM-104 a CAM-109**.
+  - **CAM-115**: avisar en la app cuando se ignora una lectura de km.
+  - Se asignó épica a CAM-84, 91 y 94, y se completaron las descripciones de CAM-93 y CAM-84.
+  - CAM-90 se pasó al Sprint 7 y queda en "Finalizada".
+- Todo pasó por `revisor`, incluida una revisión final de cada PR completo.
 
 ## Qué sigue
 
-- **Probar con sesión de admin en el navegador:** CAM-82 (pestañas, detalle,
-  atrás/adelante, recarga) y CAM-53 (foto rota de CB299ZA → mensaje).
-- **Reiniciar el backend de IntelliJ:** arrancó a las 12:47, antes de que se mergearan
-  CAM-74 y CAM-75.
+- **Poner al día los repos locales:**
+  - `git switch develop && git pull` en los dos repos de código.
+  - Borrar las ramas locales: `release/guido-sprint-5`, `feature/CAM-84`, `feature/CAM-88`,
+    `feature/CAM-90`, `feature/CAM-92`, `feature/CAM-92-periodo-unificado` y `feature/CAM-93`.
+- **Levantar el backend de IntelliJ desde `develop`.** El seed ya está cargado.
+- **Confirmar que el CI de `develop` del backend quedó en verde** después del merge de #20.
+- **Sprint 7:**
+  - Crear la release del sprint (definir el nombre; antes fue `release/guido-sprint-5`).
+  - Las cards de Guido son CAM-65 (UI del calendario) y CAM-104 a 108 (Gastos).
 - **Jira:**
-  - Confirmar CAM-83.
-  - Avisar a Tomás que actualice sus ramas desde `develop`, por el cambio de paquete.
-- **Cards nuevas para proponer** (salieron de las revisiones y quedaron afuera a
-  propósito):
-  - Las fotos subidas en `FinalizeWorkOrderModal` no llegan al detalle si se cancela.
-  - Unificar `WORK_ORDER_FINALIZED` (gastos) con `WORK_ORDER_CLOSED` (fotos y PATCH).
-  - Con atrás, un modal con cambios sin guardar se cierra sin preguntar.
-- **Borrar ramas mergeadas:** `feature/CAM-23-CAM-30-CAM-78`, `feature/CAM-74` (en los
-  dos repos), `feature/CAM-82`, `feature/CAM-53`, y `feature/CAM-75`, que es solo local.
+  - Completar la descripción de CAM-92.
+  - Dejar en CAM-88 un comentario con lo implementado.
+- **Avisar a Tomás:**
+  - El arreglo de "Últimos 3 meses" ya toca su `period.ts`.
+  - `PeriodFilter` ahora acepta `allLabel` y `label`.
+- **Cards para proponer** (salieron de las revisiones):
+  - Cerrar la concurrencia del km (`@Version` en `Vehicle`).
+  - El encabezado de Planes no entra en un celular.
+  - El contraste del rojo del dictado (4,2 contra 4,5).
+  - Siguen de antes: las fotos de `FinalizeWorkOrderModal` al cancelar, unificar
+    `WORK_ORDER_FINALIZED` con `WORK_ORDER_CLOSED`, y el botón atrás con un modal sin guardar.
 - **Siguen vigentes de antes:**
-  - CAM-73 (JWT en toda la API), CAM-69/70, CAM-76, CAM-52, CAM-65.
+  - CAM-73, CAM-69/70 y CAM-76.
+  - Probar con sesión de admin CAM-82 (navegación) y CAM-53.
   - Reactivar el aviso de contraseñas filtradas de Chrome.
-  - Limpiar los usuarios de prueba (`tecnico3`, `tecnico4`, "José Muñoz", "jose muñoz")
-    y las OTs de prueba.
   - Probar la cámara en un Android real.
-  - Foco de los modales del admin.
+  - El foco de los modales del admin.
 
 ## Decisiones abiertas
 
-- **Resuelta: router del frontend.** Es ruteo propio sin librería, solo para el admin
-  (CAM-82). Chofer y técnico siguen en `/`. Documentado en `frontend-AGENTS.md`, junto con
-  el requisito de fallback de SPA para desplegar.
-- **Resuelta: km inválido al finalizar.** Responde 422 con detalle por campo, no 400. Se
-  mantiene la convención de la API.
-- **Nueva (aceptada, documentada en fe#24):** si un admin cierra sesión y entra un chofer
-  en la misma pestaña, atrás puede cambiar la URL sin cambiar la pantalla; recargar lo
-  corrige.
+- **Resuelta: flujo de ramas y PRs.** Una release por sprint, sin PR por card, y un solo PR a
+  `develop` que revisa Tomás.
+- **Resueltas, de CAM-90 (con Guido):**
+  - Tope de 5.000 km: un salto mayor se carga a mano, y los vehículos se dan de alta con su km
+    real.
+  - La OT se cierra cuando se repara, así que `completedKm` no puede ser menor al km del
+    vehículo (CAM-74 sigue igual).
+  - Un vehículo de baja no cambia su km.
 - **Siguen de antes:**
-  - Protección de rama en `develop` con CI obligatorio (la activa Tomás).
-  - Card de CI para el frontend.
-  - Unicidad del username con acentos en la base de Tomás.
-  - Resetear la contraseña no invalida tokens ya emitidos (aceptado).
-  - CAM-33 y el "chofer asignado".
+  - Protección de rama en `develop` con CI obligatorio.
+  - CI para el frontend.
+  - Unicidad del username con acentos.
+  - Resetear la contraseña no invalida los tokens ya emitidos.
+  - CAM-33.
   - Épicas CAM-7 y CAM-9.
-  - Paginación general.
+  - Paginación.
   - `workOrderId` de las completions cargadas a mano.
-  - Ramas encadenadas.
-  - `bugfix/` vs `feature/`.
-  - PRs viejos de `feature/guido`.
-  - Flujo formal de ramas y PRs.
+  - `bugfix/` contra `feature/`.
   - `STATE.md` cuando Tomás mergea sin ritual.
-  - `ddl-auto`.
-  - Versionado de schema, CAM-21, CAM-66.
+  - `ddl-auto`, versionado de schema, CAM-21 y CAM-66.
 
 ## Callejones sin salida
 
@@ -368,6 +379,23 @@ Lo que se probó y no funcionó, con el motivo. Se agrega, no se reemplaza.
 - **2026-10-03** — Cambiar de rama en `TIP - Frontend` cambia lo que sirve el Vite de
   Guido, porque corre desde la misma carpeta. Para probar sin pisarle nada, se usó una
   copia aparte en 8081/5174.
+- **2026-10-07** — `git log --since` sobre la rama local no mostró los commits de Tomás, porque
+  el `develop` local estaba atrás. Para ver qué pasó entre sesiones hay que hacer `git fetch` y
+  mirar `origin/develop`.
+- **2026-10-08** — Se arrancó CAM-85 sin mirar las ramas de Tomás, y él la estaba haciendo para
+  CAM-87. Antes de empezar una card de la que otra depende, revisar
+  `git for-each-ref refs/remotes/origin` por ramas que la mencionen.
+- **2026-10-12** — Al cerrar el Sprint 5, Jira marcó CAM-90 como Finalizada sin estar hecha. Para
+  traer al sprint activo una card de un sprint cerrado: `editJiraIssue` con `customfield_10020` =
+  id del sprint (el 7 es `40`). Mantiene el estado y la card queda en los dos sprints.
+- **2026-10-12** — `cmd //c mklink /J` desde Git Bash con rutas con espacios dejó un enlace roto.
+  Para enlazar `node_modules` en un worktree aparte anduvo PowerShell:
+  `New-Item -ItemType Junction`. Para borrarlo sin tocar el `node_modules` real:
+  `(Get-Item <link>).Delete()`.
+- **2026-10-12** — `seed-demo.sql` **borra todos los datos operativos y todos los usuarios salvo
+  `admin`**. Hay que correrlo con el backend apagado y copiar `docs/db/demo-photos/*` a
+  `uploads/photos`. Sus fotos apuntan a `localhost:8080`, así que para verlas el backend tiene que
+  estar en ese puerto.
 
 ## Historial
 
@@ -579,3 +607,7 @@ Una línea por sesión.
   mergeado a `develop` (#17, #18, fe#23–26). Se recuperaron con PRs nuevos dos correcciones
   que habían quedado afuera de un merge temprano, y `develop` quedó verificado con build,
   tests, CI y la app andando.
+- **2026-10-07/12** — Backlog: épica de Notificaciones (CAM-95, 96 a 103) y Gastos (CAM-104 a
+  109). CAM-85 descartada (la hizo Tomás). CAM-93, 84, 88, 92 y 90 hechas con el flujo nuevo de
+  release por sprint, y la unificación del filtro de período con lo de Tomás. Todo pasó por
+  `revisor` y entró a `develop` (#20, fe#28). Seed de demo cargado y verificado.
