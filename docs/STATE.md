@@ -8,62 +8,83 @@ de Guido.
 
 ## Dónde estamos
 
-El Sprint 7 - Entrega 2 (hasta el 17/10) ya tiene su release, `release/guido-sprint-7`, creada y
-pusheada en los dos repos. Su primera card, **CAM-65**, está terminada, mergeada a la release y
-actualizada en Jira. Ninguna card del sprint llegó todavía a `develop`. Las cards de Guido que quedan
-son las de Gastos, CAM-104 a 108.
+El Sprint 7 - Entrega 2 (hasta el 17/10) va casi completo en `release/guido-sprint-7`: están mergeadas
+CAM-65, 104, 105, 107 y 108, y de las cards de Guido solo falta **CAM-106**. Ninguna card del sprint
+llegó todavía a `develop`: va con un PR de la release al final.
 
 ## En qué quedé
 
-- **CAM-65 (backend), `30755d6`:** `GET /api/maintenance-schedule` acepta varios estados.
-  - Se pasan separados por comas o repitiendo `status`.
-  - Sin `status` sigue trayendo solo `scheduled`. Los valores vacíos se ignoran, y uno desconocido
-    es un 422.
-  - Toca `ScheduledMaintenanceService.listByRange` y el repositorio, que ahora usa `StatusIn`.
-  - Contrato en `openapi.yaml` y en la decisión 10 de `CAM-42-schedule-contract.md`.
-- **CAM-65 (frontend), `f07d497`.** Calendario semanal y mensual:
-  - El color y el chip de cada turno dicen su estado: programado, atrasado, hecho o cancelado
-    (`utils/scheduleStatus.ts`, `ScheduleStatusBadge`). "Atrasado" se calcula en el front.
-  - El origen va como texto.
-  - Se ven lo hecho y lo cancelado. Su detalle es de solo lectura, y "Eliminar" pasó a
-    "Cancelar turno".
-  - Hay un estado vacío, que no ofrece agendar en semanas pasadas.
-  - Tokens nuevos: `--fg-text-muted`, `--fg-hover` y `--fg-shadow-pop`.
-- **CAM-65 (frontend), selectores de fecha y hora propios** en `components/datetime/`, pedidos por
-  Guido para toda la app:
-  - Componentes: `DatePicker`, `TimePicker` (cada 15 minutos), `DateTimePicker` y `Popover` (en un
-    portal).
-  - Reemplazan todos los `type="date"` y `datetime-local`: Planificar, Editar turno, Marcar como
-    hecho y `PeriodFilter`.
-- **Revisión:** todo pasó por `revisor` en dos rondas, sin nada bloqueante, y lo que marcó está
-  corregido.
-- **Verificación:** el build del backend pasa con tests y coverage, el lint y el build del front
-  también, y se probó en el navegador a 1366px y en celular.
-- **Commits:** las dos features están mergeadas con `--no-ff` a la release y pusheadas, junto con
-  `feature/CAM-65`.
-- **Jira:** Guido actualizó CAM-65.
-- **Seed de demo:** `admin`/`admin123` del encabezado de `seed-demo.sql` funciona en la base local.
+- **CAM-104, preventivo contra correctivo (frontend, `1b405f2`):**
+  - Ya estaba hecha desde CAM-52 y se revisó contra la card.
+  - Se sumó que "Evolución del gasto" parte cada mes en preventivo, correctivo y órdenes sueltas, con
+    los colores de la dona (`ColumnChart` apilado).
+  - Los totales los sigue calculando el front: queda como deuda técnica (ver "Qué sigue").
+- **CAM-105, costos en el detalle del vehículo, versión liviana (backend `c6a843e`, frontend `4bed7fe`):**
+  - Backend: `GET /api/vehicles/{id}/costs`, solo ADMIN. Devuelve el total histórico, los últimos 12
+    meses y el costo por km.
+  - Frontend: la tarjeta `VehicleCostsCard`. "Ver gastos" lleva a `/gastos?vehiculo={id}`, con los
+    últimos 12 meses.
+  - Sin desglose por categoría.
+  - El costo por km arranca del registro de km **más antiguo** (inspecciones y mantenimientos hechos),
+    no del menor.
+  - Contrato en `CAM-105-vehicle-costs-contract.md`.
+  - De paso se arregló la etiqueta "Por día"/"Por mes" de "Evolución del gasto".
+- **CAM-108, exportar a CSV (frontend, `ed47062`):**
+  - Solo en el front (opción B de la card): exporta las filas del listado, con el período, todos los
+    filtros y la búsqueda.
+  - Formato para Excel en español: `;`, coma decimal, BOM y CRLF.
+  - Protege las descripciones que empiezan con `= + - @` para que Excel no las ejecute como fórmula.
+  - Columna extra "Realizado por". Archivo en `utils/expensesCsv.ts`.
+- **CAM-107, comprobante del gasto (backend `251d269`, frontend `d41f095`):**
+  - Número (hasta 50 caracteres) y foto, los dos opcionales, al crear el gasto desde la OT del admin.
+  - La foto tiene que estar subida a este mismo servidor (se compara contra el origen del pedido). Si
+    no, da 422.
+  - Se ve en la OT y en la pestaña Gastos.
+  - El número entra en la búsqueda y en el CSV, siempre como texto para Excel.
+  - `openapi.yaml` 1.10.
+- **Revisión:** todo pasó por `revisor` (CAM-107 en tres rondas), sin nada bloqueante, y lo que marcó
+  está corregido.
+- **Verificación:**
+  - Build del backend con tests y coverage, lint y build del front.
+  - Prueba en navegador a 1366px y en celular.
+  - Los gastos y las fotos de prueba se borraron.
+  - Guido reinició su backend y probó CAM-105, CAM-107 y el CSV en Excel (ceros y acentos OK).
+- **Commits:** todo está mergeado con `--no-ff` a la release y pusheado, igual que las
+  `feature/CAM-104/105/107/108`.
+- **Jira:**
+  - CAM-104, 105, 107 y 108 en "Pendiente a Integrar", con comentarios de lo hecho.
+  - Se creó **CAM-116** en CAM-71: "Kilometraje: referencia y aviso en la inspección, km actual
+    precargado en el taller".
+- **Base local de Guido:** `ddl-auto` creó las columnas `work_order_expenses.receipt_number` y
+  `receipt_photo_url`. Las dos admiten vacío.
 
 ## Qué sigue
 
-- **Sprint 7:** seguir con Gastos, CAM-104 a 108. Cada una sale de `release/guido-sprint-7`.
-- **Al final del sprint:** un PR de `release/guido-sprint-7` a `develop` en cada repo. Ahí corre el
-  CI del backend.
-- **Guido avisa a Tomás:**
-  - `PeriodFilter` ahora usa `DatePicker` y ya no tiene el estado de rango inválido.
-  - El GET del calendario acepta varios estados.
-  - El arreglo de "Últimos 3 meses" en su `period.ts`, y que `PeriodFilter` acepta `allLabel` y
-    `label`.
-- **Jira, pendientes de antes:** completar la descripción de CAM-92 y comentar en CAM-88 lo
-  implementado.
-- **Cards para proponer:**
-  - Nuevas, de esta sesión:
-    - Que el backend no deje reprogramar ni cancelar un turno ya hecho o cancelado.
-    - Que valide las fechas pasadas también al editar (`update` no chequea `PAST_DATE`).
-    - Que un turno pase a "Atrasado" con la pantalla quieta, sin esperar a que se vuelva a dibujar.
+- **Sprint 7:**
+  - CAM-106, KPIs de gastos en el Resumen, que sale de `release/guido-sprint-7`.
+  - Después, un PR de la release a `develop` en cada repo, antes del 17/10. Ahí corre el CI del backend.
+- **Jira:**
+  - Revisar CAM-110 a 113. Parecen cubiertas por CAM-52 (listado por vehículo, filtro por vehículo,
+    internos contra externos y búsqueda por descripción); si es así, pasarlas a Finalizada.
+  - Refinar CAM-116.
+  - Sigue de antes: completar la descripción de CAM-92.
+- **Deuda técnica:**
+  - Los totales de la pestaña Gastos (por categoría, por origen, por mes, por vehículo) los calcula el
+    front sobre el listado. Tienen que salir del backend, con algo como `GET /api/expenses/summary` y
+    los mismos filtros.
+- **Cards para crear y refinar en la próxima sesión:**
+  - Nuevas de esta sesión:
+    - Categorías de gastos configurables. Hoy son tres fijas (repuesto, mano de obra y otro), y no hay
+      card en CAM-64.
+    - Mover el cálculo de los totales de Gastos al backend (la deuda técnica de arriba).
+    - Que el técnico pueda cargar gastos con su comprobante desde su vista. Charlarlo con Tomás.
+    - En el detalle de una OT en celular, el botón "Pasar a en proceso" se corta a la derecha.
   - Siguen de antes:
+    - Que el backend no deje reprogramar ni cancelar un turno hecho o cancelado.
+    - Que valide las fechas pasadas al editar.
+    - Que un turno pase a "Atrasado" con la pantalla quieta.
     - `@Version` en `Vehicle`.
-    - El encabezado de Planes no entra en un celular.
+    - El encabezado de Planes en celular.
     - El contraste del rojo del dictado.
     - Las fotos de `FinalizeWorkOrderModal` al cancelar.
     - Unificar `WORK_ORDER_FINALIZED` con `WORK_ORDER_CLOSED`.
@@ -78,12 +99,22 @@ son las de Gastos, CAM-104 a 108.
 ## Decisiones abiertas
 
 - **Resueltas en esta sesión (con Guido):**
-  - El nombre de la release del Sprint 7: `release/guido-sprint-7`.
-  - Mostrar lo hecho y lo cancelado cambiando el backend, no con tres llamadas.
-  - El color indica el estado y el origen va como texto.
-  - Reemplazar el selector nativo en todos los campos, dentro de CAM-65.
-  - Tipeo de fecha y hora: no hace falta. Alcanza con elegir del selector, con horarios cada
-    15 minutos.
+  - CAM-104 se da por cumplida y se suma el gráfico por mes apilado por origen.
+  - CAM-105 en versión liviana, centrada en el costo por km. El primer registro de km es el más
+    antiguo, no el menor.
+  - CAM-108 solo en el front, y exporta exactamente lo filtrado, búsqueda incluida.
+  - CAM-107:
+    - Número y foto opcionales.
+    - El comprobante se adjunta solo al crear el gasto.
+    - Lo carga el admin.
+  - Kilometraje: no precargar el km en la inspección del chofer, mostrarlo como referencia y avisar si
+    es menor. En el taller, sí precargarlo (CAM-116).
+  - Los totales de Gastos tienen que calcularse en el backend. Queda como deuda técnica, no se hace en
+    este sprint.
+  - CAM-88 cerrada: Tomás comentó lo implementado.
+- **Nuevas:**
+  - Si el técnico tiene que poder cargar gastos y comprobantes. Cambia quién maneja la plata, así que
+    hay que charlarlo con Tomás.
 - **Siguen de antes:**
   - Protección de rama en `develop` con CI obligatorio.
   - CI para el frontend.
@@ -399,6 +430,18 @@ Lo que se probó y no funcionó, con el motivo. Se agrega, no se reemplaza.
 - **2026-10-14** — `printf` con rutas de Windows (`C:\Users\...`) en Bash interpretó `\U` como un
   escape y rompió los `.cmd` y `launch.json`. Los archivos con rutas de Windows se escriben con la
   herramienta Write. En JSON, usar barras `/`.
+- **2026-10-14** — El costo por km tomado desde el **menor** km registrado falló con los datos reales.
+  Hay inspecciones de AA846JQ con 310 y 15.000 km en un vehículo de 309.400 km: CAM-90 guarda la
+  inspección con un km menor aunque no baje el del vehículo. Daba $ 8,86 por km. Se resolvió tomando
+  el registro **más antiguo** por fecha.
+- **2026-10-14** — Las herramientas Write y Edit convierten el escape Unicode del BOM (U+FEFF) escrito
+  en el código en el carácter invisible, y un `sed` con la barra escapada se la comió y dejó `'FEFF'`.
+  Anduvo escribirlo con Python armando la barra con `chr(92)`. Ante escapes Unicode en el código,
+  revisar el resultado con `od -c`.
+- **2026-10-14** — Para probar con backend y front propios (8081 y 5174) sin pisar los de Guido, se
+  agregaron entradas temporales a `.claude/launch.json` apuntando a `.cmd` en la carpeta temporal de
+  la sesión, y se revirtieron con `git checkout` al terminar. El backend de prueba usa la misma base
+  local, así que `ddl-auto` le crea las columnas nuevas también a Guido.
 
 ## Historial
 
@@ -617,3 +660,7 @@ Una línea por sesión.
 - **2026-10-14** — Se creó `release/guido-sprint-7`. CAM-65 terminada: el calendario muestra el estado
   de cada turno (el GET acepta varios estados) y hay selectores de fecha y hora propios en toda la app.
   Pasó por `revisor` en dos rondas, se mergeó a la release y se pusheó.
+- **2026-10-14** (continuación) — CAM-104 (evolución del gasto apilada por origen), CAM-105 (costo por
+  km en el detalle del vehículo), CAM-108 (exportar a CSV con los filtros) y CAM-107 (número y foto del
+  comprobante). Todo pasó por `revisor`, se mergeó a `release/guido-sprint-7` y se pusheó, con
+  comentarios en Jira. Se creó CAM-116 (kilometraje en inspección y taller).
