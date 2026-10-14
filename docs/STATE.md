@@ -1,6 +1,6 @@
 # Estado — FleetGuard
 
-Última actualización: **2026-10-12**
+Última actualización: **2026-10-14**
 Se escribe con el ritual de `docs/guias/sesiones.md`, siempre con confirmación
 de Guido.
 
@@ -8,90 +8,82 @@ de Guido.
 
 ## Dónde estamos
 
-El Sprint 5 cerró. Todas las cards de Guido de ese sprint están en `develop`: CAM-93, 84, 88, 92
-y 90, que entraron con una release por repo (backend #20, frontend #28). Las de Tomás también:
-CAM-52, 85, 86, 87, 89, 91 y 94 (#19, fe#27). Ahora está activo el **Sprint 7 - Entrega 2**
-(hasta el 17/10). La base local tiene cargado el seed de demo de Tomás.
+El Sprint 7 - Entrega 2 (hasta el 17/10) ya tiene su release, `release/guido-sprint-7`, creada y
+pusheada en los dos repos. Su primera card, **CAM-65**, está terminada, mergeada a la release y
+actualizada en Jira. Ninguna card del sprint llegó todavía a `develop`. Las cards de Guido que quedan
+son las de Gastos, CAM-104 a 108.
 
 ## En qué quedé
 
-- **Nuevo flujo de ramas (2026-10-12):**
-  - Las cards de Guido se trabajan en `feature/CAM-XX`, salen de una release por sprint y se
-    mergean **directo, sin PR**, a esa release.
-  - Al final del sprint va **un solo PR** de la release a `develop`.
-  - La del Sprint 5 fue `release/guido-sprint-5`, en los dos repos; ya se mergeó y se borró.
-- **CAM-93** (frontend): "Desactivar plan" se movió de la lista al modal de "Editar". El botón es
-  neutro y se pone rojo al pasar el mouse. Si otro admin ya lo había desactivado
-  (`PLAN_INACTIVE`), se trata como hecho.
-- **CAM-84** (frontend): los botones "Dictar" y "Adjuntar foto" usan el color principal. Mientras
-  escucha, el dictado dice "Detener". Aplica también a "Sacar foto" del técnico.
-- **CAM-88** (frontend): el calendario agrupa y pide los turnos por día local
-  (`utils/localDate.ts`), así lo programado desde las 21:00 ya no cae al día siguiente.
-- **CAM-92** (frontend): filtro por fecha de creación en Órdenes de trabajo. Después se unificó
-  con lo de Tomás:
-  - OTs usa su `PeriodFilter`, con "Todas las fechas" y el texto "Creadas:".
-  - `utils/period.ts` es la única fuente de los períodos.
-  - Se corrigió "Últimos 3 meses" los días 29, 30 y 31, también en Gastos y Usuarios.
-- **CAM-90** (backend): el km del vehículo avanza solo con las inspecciones, las OTs finalizadas
-  y los mantenimientos hechos (`service/OdometerReadings`).
-  - Tope de salto: `fleetguard.odometer.max-jump-km: 5000`.
-  - Un vehículo dado de baja no cambia su km.
-  - Contrato en `CAM-40-fleet-status-contract.md` y `openapi.yaml`.
-- **CAM-85 se descartó sin pushear**, porque la hizo Tomás para CAM-87. Hay un respaldo en un
-  parche local.
-- **Seed de demo cargado** (`docs/db/seed-demo.sql`, de Tomás):
-  - 10 camiones, 177 OTs y 46 defectos, con sus fotos copiadas a `uploads/photos`.
-  - Usuarios: `admin`, 5 choferes y 2 técnicos (lista y contraseñas en el encabezado del
-    archivo).
-  - Ya no existe `chofer`, y se borraron los usuarios de prueba viejos.
-- **Jira:**
-  - Nueva épica **CAM-95 Notificaciones**, con CAM-96 a CAM-103; CAM-19 se movió ahí.
-  - Gastos: **CAM-104 a CAM-109**.
-  - **CAM-115**: avisar en la app cuando se ignora una lectura de km.
-  - Se asignó épica a CAM-84, 91 y 94, y se completaron las descripciones de CAM-93 y CAM-84.
-  - CAM-90 se pasó al Sprint 7 y queda en "Finalizada".
-- Todo pasó por `revisor`, incluida una revisión final de cada PR completo.
+- **CAM-65 (backend), `30755d6`:** `GET /api/maintenance-schedule` acepta varios estados.
+  - Se pasan separados por comas o repitiendo `status`.
+  - Sin `status` sigue trayendo solo `scheduled`. Los valores vacíos se ignoran, y uno desconocido
+    es un 422.
+  - Toca `ScheduledMaintenanceService.listByRange` y el repositorio, que ahora usa `StatusIn`.
+  - Contrato en `openapi.yaml` y en la decisión 10 de `CAM-42-schedule-contract.md`.
+- **CAM-65 (frontend), `f07d497`.** Calendario semanal y mensual:
+  - El color y el chip de cada turno dicen su estado: programado, atrasado, hecho o cancelado
+    (`utils/scheduleStatus.ts`, `ScheduleStatusBadge`). "Atrasado" se calcula en el front.
+  - El origen va como texto.
+  - Se ven lo hecho y lo cancelado. Su detalle es de solo lectura, y "Eliminar" pasó a
+    "Cancelar turno".
+  - Hay un estado vacío, que no ofrece agendar en semanas pasadas.
+  - Tokens nuevos: `--fg-text-muted`, `--fg-hover` y `--fg-shadow-pop`.
+- **CAM-65 (frontend), selectores de fecha y hora propios** en `components/datetime/`, pedidos por
+  Guido para toda la app:
+  - Componentes: `DatePicker`, `TimePicker` (cada 15 minutos), `DateTimePicker` y `Popover` (en un
+    portal).
+  - Reemplazan todos los `type="date"` y `datetime-local`: Planificar, Editar turno, Marcar como
+    hecho y `PeriodFilter`.
+- **Revisión:** todo pasó por `revisor` en dos rondas, sin nada bloqueante, y lo que marcó está
+  corregido.
+- **Verificación:** el build del backend pasa con tests y coverage, el lint y el build del front
+  también, y se probó en el navegador a 1366px y en celular.
+- **Commits:** las dos features están mergeadas con `--no-ff` a la release y pusheadas, junto con
+  `feature/CAM-65`.
+- **Jira:** Guido actualizó CAM-65.
+- **Seed de demo:** `admin`/`admin123` del encabezado de `seed-demo.sql` funciona en la base local.
 
 ## Qué sigue
 
-- **Poner al día los repos locales:**
-  - `git switch develop && git pull` en los dos repos de código.
-  - Borrar las ramas locales: `release/guido-sprint-5`, `feature/CAM-84`, `feature/CAM-88`,
-    `feature/CAM-90`, `feature/CAM-92`, `feature/CAM-92-periodo-unificado` y `feature/CAM-93`.
-- **Levantar el backend de IntelliJ desde `develop`.** El seed ya está cargado.
-- **Confirmar que el CI de `develop` del backend quedó en verde** después del merge de #20.
-- **Sprint 7:**
-  - Crear la release del sprint (definir el nombre; antes fue `release/guido-sprint-5`).
-  - Las cards de Guido son CAM-65 (UI del calendario) y CAM-104 a 108 (Gastos).
-- **Jira:**
-  - Completar la descripción de CAM-92.
-  - Dejar en CAM-88 un comentario con lo implementado.
-- **Avisar a Tomás:**
-  - El arreglo de "Últimos 3 meses" ya toca su `period.ts`.
-  - `PeriodFilter` ahora acepta `allLabel` y `label`.
-- **Cards para proponer** (salieron de las revisiones):
-  - Cerrar la concurrencia del km (`@Version` en `Vehicle`).
-  - El encabezado de Planes no entra en un celular.
-  - El contraste del rojo del dictado (4,2 contra 4,5).
-  - Siguen de antes: las fotos de `FinalizeWorkOrderModal` al cancelar, unificar
-    `WORK_ORDER_FINALIZED` con `WORK_ORDER_CLOSED`, y el botón atrás con un modal sin guardar.
+- **Sprint 7:** seguir con Gastos, CAM-104 a 108. Cada una sale de `release/guido-sprint-7`.
+- **Al final del sprint:** un PR de `release/guido-sprint-7` a `develop` en cada repo. Ahí corre el
+  CI del backend.
+- **Guido avisa a Tomás:**
+  - `PeriodFilter` ahora usa `DatePicker` y ya no tiene el estado de rango inválido.
+  - El GET del calendario acepta varios estados.
+  - El arreglo de "Últimos 3 meses" en su `period.ts`, y que `PeriodFilter` acepta `allLabel` y
+    `label`.
+- **Jira, pendientes de antes:** completar la descripción de CAM-92 y comentar en CAM-88 lo
+  implementado.
+- **Cards para proponer:**
+  - Nuevas, de esta sesión:
+    - Que el backend no deje reprogramar ni cancelar un turno ya hecho o cancelado.
+    - Que valide las fechas pasadas también al editar (`update` no chequea `PAST_DATE`).
+    - Que un turno pase a "Atrasado" con la pantalla quieta, sin esperar a que se vuelva a dibujar.
+  - Siguen de antes:
+    - `@Version` en `Vehicle`.
+    - El encabezado de Planes no entra en un celular.
+    - El contraste del rojo del dictado.
+    - Las fotos de `FinalizeWorkOrderModal` al cancelar.
+    - Unificar `WORK_ORDER_FINALIZED` con `WORK_ORDER_CLOSED`.
+    - El botón atrás con un modal sin guardar.
 - **Siguen vigentes de antes:**
   - CAM-73, CAM-69/70 y CAM-76.
-  - Probar con sesión de admin CAM-82 (navegación) y CAM-53.
+  - Probar con sesión de admin CAM-82 y CAM-53.
   - Reactivar el aviso de contraseñas filtradas de Chrome.
   - Probar la cámara en un Android real.
   - El foco de los modales del admin.
 
 ## Decisiones abiertas
 
-- **Resuelta: flujo de ramas y PRs.** Una release por sprint, sin PR por card, y un solo PR a
-  `develop` que revisa Tomás.
-- **Resueltas, de CAM-90 (con Guido):**
-  - Tope de 5.000 km: un salto mayor se carga a mano, y los vehículos se dan de alta con su km
-    real.
-  - La OT se cierra cuando se repara, así que `completedKm` no puede ser menor al km del
-    vehículo (CAM-74 sigue igual).
-  - Un vehículo de baja no cambia su km.
+- **Resueltas en esta sesión (con Guido):**
+  - El nombre de la release del Sprint 7: `release/guido-sprint-7`.
+  - Mostrar lo hecho y lo cancelado cambiando el backend, no con tres llamadas.
+  - El color indica el estado y el origen va como texto.
+  - Reemplazar el selector nativo en todos los campos, dentro de CAM-65.
+  - Tipeo de fecha y hora: no hace falta. Alcanza con elegir del selector, con horarios cada
+    15 minutos.
 - **Siguen de antes:**
   - Protección de rama en `develop` con CI obligatorio.
   - CI para el frontend.
@@ -396,6 +388,17 @@ Lo que se probó y no funcionó, con el motivo. Se agrega, no se reemplaza.
   `admin`**. Hay que correrlo con el backend apagado y copiar `docs/db/demo-photos/*` a
   `uploads/photos`. Sus fotos apuntan a `localhost:8080`, así que para verlas el backend tiene que
   estar en ese puerto.
+- **2026-10-14** — `preview_stop` dijo que los lanzadores `.cmd` habían terminado ("exited with code
+  1"), pero el `java` de `bootRun` y el `node` de Vite seguían ocupando 8080 y 5173. Es el mismo
+  problema del 2026-08-31, ahora con el lanzador del Code tab. Antes de matar, conviene ver qué
+  proceso es con `Get-CimInstance Win32_Process` (fecha de creación y línea de comando), para no
+  matar el IntelliJ de Guido.
+- **2026-10-14** — Con el panel del navegador oculto, la página mide 0px de ancho: las medidas de
+  layout por JavaScript no sirven y las capturas fallan. Se resolvió fijando el tamaño con
+  `resize_window` (por ejemplo 1366×768), sin necesidad de mostrar el panel.
+- **2026-10-14** — `printf` con rutas de Windows (`C:\Users\...`) en Bash interpretó `\U` como un
+  escape y rompió los `.cmd` y `launch.json`. Los archivos con rutas de Windows se escriben con la
+  herramienta Write. En JSON, usar barras `/`.
 
 ## Historial
 
@@ -611,3 +614,6 @@ Una línea por sesión.
   109). CAM-85 descartada (la hizo Tomás). CAM-93, 84, 88, 92 y 90 hechas con el flujo nuevo de
   release por sprint, y la unificación del filtro de período con lo de Tomás. Todo pasó por
   `revisor` y entró a `develop` (#20, fe#28). Seed de demo cargado y verificado.
+- **2026-10-14** — Se creó `release/guido-sprint-7`. CAM-65 terminada: el calendario muestra el estado
+  de cada turno (el GET acepta varios estados) y hay selectores de fecha y hora propios en toda la app.
+  Pasó por `revisor` en dos rondas, se mergeó a la release y se pusheó.
