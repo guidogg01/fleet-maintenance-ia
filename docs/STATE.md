@@ -8,77 +8,44 @@ de Guido.
 
 ## Dónde estamos
 
-El Sprint 7 - Entrega 2 (hasta el 17/10) va casi completo en `release/guido-sprint-7`: están mergeadas
-CAM-65, 104, 105, 107 y 108, y de las cards de Guido solo falta **CAM-106**. Ninguna card del sprint
-llegó todavía a `develop`: va con un PR de la release al final.
+El Sprint 7 - Entrega 2 (hasta el 17/10) está terminado del lado de Guido. Los PRs de
+`release/guido-sprint-7` a `develop` están abiertos en los dos repos (#21 y fe#29), con el CI del
+backend en verde y sin conflictos. Falta que Tomás los revise y los mergee.
 
 ## En qué quedé
 
-- **CAM-104, preventivo contra correctivo (frontend, `1b405f2`):**
-  - Ya estaba hecha desde CAM-52 y se revisó contra la card.
-  - Se sumó que "Evolución del gasto" parte cada mes en preventivo, correctivo y órdenes sueltas, con
-    los colores de la dona (`ColumnChart` apilado).
-  - Los totales los sigue calculando el front: queda como deuda técnica (ver "Qué sigue").
-- **CAM-105, costos en el detalle del vehículo, versión liviana (backend `c6a843e`, frontend `4bed7fe`):**
-  - Backend: `GET /api/vehicles/{id}/costs`, solo ADMIN. Devuelve el total histórico, los últimos 12
-    meses y el costo por km.
-  - Frontend: la tarjeta `VehicleCostsCard`. "Ver gastos" lleva a `/gastos?vehiculo={id}`, con los
-    últimos 12 meses.
-  - Sin desglose por categoría.
-  - El costo por km arranca del registro de km **más antiguo** (inspecciones y mantenimientos hechos),
-    no del menor.
-  - Contrato en `CAM-105-vehicle-costs-contract.md`.
-  - De paso se arregló la etiqueta "Por día"/"Por mes" de "Evolución del gasto".
-- **CAM-108, exportar a CSV (frontend, `ed47062`):**
-  - Solo en el front (opción B de la card): exporta las filas del listado, con el período, todos los
-    filtros y la búsqueda.
-  - Formato para Excel en español: `;`, coma decimal, BOM y CRLF.
-  - Protege las descripciones que empiezan con `= + - @` para que Excel no las ejecute como fórmula.
-  - Columna extra "Realizado por". Archivo en `utils/expensesCsv.ts`.
-- **CAM-107, comprobante del gasto (backend `251d269`, frontend `d41f095`):**
-  - Número (hasta 50 caracteres) y foto, los dos opcionales, al crear el gasto desde la OT del admin.
-  - La foto tiene que estar subida a este mismo servidor (se compara contra el origen del pedido). Si
-    no, da 422.
-  - Se ve en la OT y en la pestaña Gastos.
-  - El número entra en la búsqueda y en el CSV, siempre como texto para Excel.
-  - `openapi.yaml` 1.10.
-- **Revisión:** todo pasó por `revisor` (CAM-107 en tres rondas), sin nada bloqueante, y lo que marcó
-  está corregido.
-- **Verificación:**
-  - Build del backend con tests y coverage, lint y build del front.
-  - Prueba en navegador a 1366px y en celular.
-  - Los gastos y las fotos de prueba se borraron.
-  - Guido reinició su backend y probó CAM-105, CAM-107 y el CSV en Excel (ceros y acentos OK).
-- **Commits:** todo está mergeado con `--no-ff` a la release y pusheado, igual que las
-  `feature/CAM-104/105/107/108`.
-- **Jira:**
-  - CAM-104, 105, 107 y 108 en "Pendiente a Integrar", con comentarios de lo hecho.
-  - Se creó **CAM-116** en CAM-71: "Kilometraje: referencia y aviso en la inspección, km actual
-    precargado en el taller".
-- **Base local de Guido:** `ddl-auto` creó las columnas `work_order_expenses.receipt_number` y
-  `receipt_photo_url`. Las dos admiten vacío.
+- **CAM-106, KPIs de gastos en el Resumen (sin código):**
+  - Se revisó contra la pestaña Gastos de CAM-52 y está cubierta. El total del mes es "Total del
+    período" con "Este mes", y los vehículos más caros salen de "Vehículo con más gasto" y "Gasto
+    por vehículo".
+  - La card pedía "reusar el resumen de CAM-52", pero ese endpoint no existe: `GET /api/expenses`
+    es solo el listado.
+  - Lo único nuevo que aportaba era la variación contra el mes anterior, y no justificaba una card.
+  - Guido la pasó a Finalizada.
+- **PRs del sprint:**
+  - Se abrieron #21 (backend) y fe#29 (frontend), los dos titulados
+    `CAM-65 | CAM-104 | CAM-105 | CAM-106 | CAM-107 | CAM-108`.
+  - La descripción tiene una tabla con qué cambió cada card en ese repo, CAM-106 incluida como "sin
+    cambios de código", para que Tomás vea todo lo trabajado.
+  - Al final hay una sección "A tener en cuenta": `openapi.yaml` 1.10, las columnas nuevas de
+    CAM-107 y que el front depende del backend de la misma release.
+  - El CI del backend ("Build, tests y coverage") pasó, y los dos PRs se pueden mergear sin
+    conflictos.
+- **Sin commitear:** `.idea/misc.xml` en el backend, un cambio de IntelliJ que no es de esta sesión.
+  No se sube.
 
 ## Qué sigue
 
-- **Sprint 7:**
-  - CAM-106, KPIs de gastos en el Resumen, que sale de `release/guido-sprint-7`.
-  - Después, un PR de la release a `develop` en cada repo, antes del 17/10. Ahí corre el CI del backend.
-- **Jira:**
-  - Revisar CAM-110 a 113. Parecen cubiertas por CAM-52 (listado por vehículo, filtro por vehículo,
-    internos contra externos y búsqueda por descripción); si es así, pasarlas a Finalizada.
-  - Refinar CAM-116.
-  - Sigue de antes: completar la descripción de CAM-92.
-- **Deuda técnica:**
-  - Los totales de la pestaña Gastos (por categoría, por origen, por mes, por vehículo) los calcula el
-    front sobre el listado. Tienen que salir del backend, con algo como `GET /api/expenses/summary` y
-    los mismos filtros.
-- **Cards para crear y refinar en la próxima sesión:**
-  - Nuevas de esta sesión:
-    - Categorías de gastos configurables. Hoy son tres fijas (repuesto, mano de obra y otro), y no hay
-      card en CAM-64.
-    - Mover el cálculo de los totales de Gastos al backend (la deuda técnica de arriba).
+- **La próxima sesión arranca con las cards a crear y refinar** (pedido de Guido):
+  - Crear en CAM-64 la card "Totales de Gastos calculados en el backend", algo como
+    `GET /api/expenses/summary` con los mismos filtros que el listado. Opcional, como agregado
+    chico: que "Total del período" muestre la variación contra el mismo tramo del período anterior.
+  - Nuevas de la sesión anterior:
+    - Categorías de gastos configurables. Hoy son tres fijas (repuesto, mano de obra y otro), y no
+      hay card en CAM-64.
     - Que el técnico pueda cargar gastos con su comprobante desde su vista. Charlarlo con Tomás.
     - En el detalle de una OT en celular, el botón "Pasar a en proceso" se corta a la derecha.
+  - Refinar CAM-116.
   - Siguen de antes:
     - Que el backend no deje reprogramar ni cancelar un turno hecho o cancelado.
     - Que valide las fechas pasadas al editar.
@@ -89,6 +56,13 @@ llegó todavía a `develop`: va con un PR de la release al final.
     - Las fotos de `FinalizeWorkOrderModal` al cancelar.
     - Unificar `WORK_ORDER_FINALIZED` con `WORK_ORDER_CLOSED`.
     - El botón atrás con un modal sin guardar.
+- **Sprint 7:**
+  - Que Tomás revise y mergee #21 y fe#29 antes del 17/10.
+  - Después, pasar CAM-65, 104, 105, 107 y 108 a Finalizada.
+- **Jira:**
+  - Revisar CAM-110 a 113. Parecen cubiertas por CAM-52 (listado por vehículo, filtro por vehículo,
+    internos contra externos y búsqueda por descripción); si es así, pasarlas a Finalizada.
+  - Sigue de antes: completar la descripción de CAM-92.
 - **Siguen vigentes de antes:**
   - CAM-73, CAM-69/70 y CAM-76.
   - Probar con sesión de admin CAM-82 y CAM-53.
@@ -99,23 +73,12 @@ llegó todavía a `develop`: va con un PR de la release al final.
 ## Decisiones abiertas
 
 - **Resueltas en esta sesión (con Guido):**
-  - CAM-104 se da por cumplida y se suma el gráfico por mes apilado por origen.
-  - CAM-105 en versión liviana, centrada en el costo por km. El primer registro de km es el más
-    antiguo, no el menor.
-  - CAM-108 solo en el front, y exporta exactamente lo filtrado, búsqueda incluida.
-  - CAM-107:
-    - Número y foto opcionales.
-    - El comprobante se adjunta solo al crear el gasto.
-    - Lo carga el admin.
-  - Kilometraje: no precargar el km en la inspección del chofer, mostrarlo como referencia y avisar si
-    es menor. En el taller, sí precargarlo (CAM-116).
-  - Los totales de Gastos tienen que calcularse en el backend. Queda como deuda técnica, no se hace en
-    este sprint.
-  - CAM-88 cerrada: Tomás comentó lo implementado.
-- **Nuevas:**
-  - Si el técnico tiene que poder cargar gastos y comprobantes. Cambia quién maneja la plata, así que
-    hay que charlarlo con Tomás.
+  - CAM-106 se cierra como cubierta por CAM-52; no se construye nada en el Resumen.
+  - Pasar los totales de Gastos al backend no entra en este sprint, para no tocar una pantalla que
+    ya anda tres días antes de la entrega. Va en su propia card.
+  - El PR de la release nombra todas las cards del sprint, también las que no tuvieron código.
 - **Siguen de antes:**
+  - Si el técnico tiene que poder cargar gastos y comprobantes. Hay que charlarlo con Tomás.
   - Protección de rama en `develop` con CI obligatorio.
   - CI para el frontend.
   - Unicidad del username con acentos.
@@ -443,6 +406,11 @@ Lo que se probó y no funcionó, con el motivo. Se agrega, no se reemplaza.
   la sesión, y se revirtieron con `git checkout` al terminar. El backend de prueba usa la misma base
   local, así que `ddl-auto` le crea las columnas nuevas también a Guido.
 
+- **2026-10-14** — CAM-106 pedía "reusar el resumen de CAM-52", pero ese resumen no existía, y lo
+  que pedía ya se veía en la pestaña Gastos. Las cards de la épica de Gastos (CAM-104 a 109) se
+  escribieron sin contrastarlas con lo que ya había hecho CAM-52. Antes de arrancar una card de esa
+  épica, conviene compararla con la pantalla real (mejor con una captura) para ver qué aporta de nuevo.
+
 ## Historial
 
 Una línea por sesión.
@@ -664,3 +632,6 @@ Una línea por sesión.
   km en el detalle del vehículo), CAM-108 (exportar a CSV con los filtros) y CAM-107 (número y foto del
   comprobante). Todo pasó por `revisor`, se mergeó a `release/guido-sprint-7` y se pusheó, con
   comentarios en Jira. Se creó CAM-116 (kilometraje en inspección y taller).
+- **2026-10-14** (continuación 2) — CAM-106 revisada contra Gastos y cerrada sin código, como
+  cubierta por CAM-52. Se abrieron los PRs del sprint 7 a `develop` (#21, con el CI en verde, y fe#29),
+  con todas las cards del sprint en la descripción.
