@@ -1,6 +1,6 @@
 # Estado — FleetGuard
 
-Última actualización: **2026-10-14**
+Última actualización: **2026-10-21**
 Se escribe con el ritual de `docs/guias/sesiones.md`, siempre con confirmación
 de Guido.
 
@@ -8,83 +8,85 @@ de Guido.
 
 ## Dónde estamos
 
-El Sprint 7 - Entrega 2 (hasta el 17/10) está terminado del lado de Guido. Los PRs de
-`release/guido-sprint-7` a `develop` están abiertos en los dos repos (#21 y fe#29), con el CI del
-backend en verde y sin conflictos. Falta que Tomás los revise y los mergee.
+El Sprint 9 - Entrega 2 cierra el 24/10. Tomás mergeó el Sprint 7 a `develop` el 19/10 (#21 y fe#29). De
+las 7 cards de Guido, las 3 de UI están hechas en `release/guido-sprint-9`. Las 4 de notificaciones no se
+pueden arrancar hasta que exista CAM-96 (la base de notificaciones, de Tomás), que no tiene descripción ni
+rama.
 
 ## En qué quedé
 
-- **CAM-106, KPIs de gastos en el Resumen (sin código):**
-  - Se revisó contra la pestaña Gastos de CAM-52 y está cubierta. El total del mes es "Total del
-    período" con "Este mes", y los vehículos más caros salen de "Vehículo con más gasto" y "Gasto
-    por vehículo".
-  - La card pedía "reusar el resumen de CAM-52", pero ese endpoint no existe: `GET /api/expenses`
-    es solo el listado.
-  - Lo único nuevo que aportaba era la variación contra el mes anterior, y no justificaba una card.
-  - Guido la pasó a Finalizada.
-- **PRs del sprint:**
-  - Se abrieron #21 (backend) y fe#29 (frontend), los dos titulados
-    `CAM-65 | CAM-104 | CAM-105 | CAM-106 | CAM-107 | CAM-108`.
-  - La descripción tiene una tabla con qué cambió cada card en ese repo, CAM-106 incluida como "sin
-    cambios de código", para que Tomás vea todo lo trabajado.
-  - Al final hay una sección "A tener en cuenta": `openapi.yaml` 1.10, las columnas nuevas de
-    CAM-107 y que el front depende del backend de la misma release.
-  - El CI del backend ("Build, tests y coverage") pasó, y los dos PRs se pueden mergear sin
-    conflictos.
-- **Sin commitear:** `.idea/misc.xml` en el backend, un cambio de IntelliJ que no es de esta sesión.
-  No se sube.
+- **Sprint 9, frontend, todo mergeado a `release/guido-sprint-9` y pusheado (`489d746`):**
+  - **CAM-122** (`a4240c5`): el placeholder del buscador de Gastos ahora es un texto propio
+    (`expenses__search-hint`). Con el cursor encima o el foco se desplaza hasta mostrar "…N° de
+    comprobante" y vuelve. El recorrido se calcula con `100cqw - 100%`, sin JS. Además, el campo hereda la
+    fuente de la app, y en alto contraste el texto queda en `GrayText`.
+  - **CAM-123** (`5ddb9b8`): todo el renglón de "Detalle de gastos" abre la OT (`expenses__table-row`,
+    mismo patrón que `.work-orders__row`). Los botones de la OT y del comprobante cortan la propagación del
+    click, y seleccionar texto no abre la OT.
+  - **CAM-124** (`6477160`): tocar cualquier parte de la tarjeta de un control del checklist cambia OK /
+    defecto. Una capa `::after` del propio interruptor se estira sobre la tarjeta (`checklist-item--toggle`).
+    Con el defecto desplegado cubre solo el renglón del título.
+  - Las tres pasaron por `revisor`, Guido las probó en la app y las descripciones de Jira quedaron completas
+    (Historia, Solución, Criterios de aceptación), sin perder las capturas.
+- **Jira:** CAM-122 y CAM-124 están en "Pendiente a Integrar" y CAM-123 sigue en "En curso".
+- **Repos locales:**
+  - El frontend quedó en `release/guido-sprint-9`.
+  - El backend sigue en `release/guido-sprint-7`, que ya está mergeada con squash. Hay que pasarlo a
+    `develop` antes de tocarlo.
+  - En el backend sigue sin commitear `.idea/misc.xml`, que no se sube.
 
 ## Qué sigue
 
-- **La próxima sesión arranca con las cards a crear y refinar** (pedido de Guido):
-  - Crear en CAM-64 la card "Totales de Gastos calculados en el backend", algo como
-    `GET /api/expenses/summary` con los mismos filtros que el listado. Opcional, como agregado
-    chico: que "Total del período" muestre la variación contra el mismo tramo del período anterior.
-  - Nuevas de la sesión anterior:
-    - Categorías de gastos configurables. Hoy son tres fijas (repuesto, mano de obra y otro), y no
-      hay card en CAM-64.
-    - Que el técnico pueda cargar gastos con su comprobante desde su vista. Charlarlo con Tomás.
-    - En el detalle de una OT en celular, el botón "Pasar a en proceso" se corta a la derecha.
+- **Sprint 9 (cierra el 24/10):**
+  - Hablar hoy con Tomás por **CAM-96**. Las cards CAM-99, 100, 101 y 119 (11 de los 14 SP de Guido)
+    dependen de ella. Opciones:
+    - que él la arranque ya;
+    - que la tome Guido;
+    - acordar entre los dos la entidad, el evento y el endpoint, y que cada uno arme sus avisos encima.
+  - Refinar CAM-100 y CAM-119, que están vacías.
+    - CAM-119 (push, 5 SP) es la de más riesgo: necesita service worker, permiso del navegador, claves
+      VAPID y que el backend envíe a una suscripción. Evaluar si se saca del sprint o se recorta.
+  - Datos para CAM-101: `Trip` ya guarda `openedById` desde CAM-87, así que esa parte de la card ya está
+    resuelta.
+  - Pasar CAM-123 a "Pendiente a Integrar".
+  - Al final del sprint, abrir el PR de `release/guido-sprint-9` a `develop` en el frontend (y en el backend
+    si entra código ahí).
+- **Bugs encontrados por `revisor`, para cards propias:**
+  - `ChecklistItemCard.handlePhotoChange` llama a `onChange` con el `state` que tenía al empezar la subida.
+    Si mientras sube la foto el chofer edita el título o pasa el control a OK, al terminar se pisa todo.
+  - En Gastos, mientras carga la OT de un renglón, el botón de OT de otro renglón (y los de "Órdenes más
+    costosas") pueden pedir una segunda OT en paralelo. Se arregla con
+    `disabled={openingWorkOrderId !== null}`.
+- **Después de cerrar el sprint** (Guido lo pospuso a propósito):
+  - Pasar CAM-65, 104, 105, 107 y 108 a Finalizada.
+  - Crear las cards de totales de Gastos en el backend, categorías configurables, el técnico cargando
+    gastos y el botón cortado en el detalle de una OT en celular.
   - Refinar CAM-116.
-  - Siguen de antes:
-    - Que el backend no deje reprogramar ni cancelar un turno hecho o cancelado.
-    - Que valide las fechas pasadas al editar.
-    - Que un turno pase a "Atrasado" con la pantalla quieta.
-    - `@Version` en `Vehicle`.
-    - El encabezado de Planes en celular.
-    - El contraste del rojo del dictado.
-    - Las fotos de `FinalizeWorkOrderModal` al cancelar.
-    - Unificar `WORK_ORDER_FINALIZED` con `WORK_ORDER_CLOSED`.
-    - El botón atrás con un modal sin guardar.
-- **Sprint 7:**
-  - Que Tomás revise y mergee #21 y fe#29 antes del 17/10.
-  - Después, pasar CAM-65, 104, 105, 107 y 108 a Finalizada.
-- **Jira:**
-  - Revisar CAM-110 a 113. Parecen cubiertas por CAM-52 (listado por vehículo, filtro por vehículo,
-    internos contra externos y búsqueda por descripción); si es así, pasarlas a Finalizada.
-  - Sigue de antes: completar la descripción de CAM-92.
-- **Siguen vigentes de antes:**
-  - CAM-73, CAM-69/70 y CAM-76.
+  - Revisar CAM-110 a 113.
+- **Siguen de antes:**
+  - Turnos: que el backend no deje reprogramar ni cancelar un turno hecho o cancelado, que valide las
+    fechas pasadas al editar, y que un turno pase a "Atrasado" con la pantalla quieta.
+  - `@Version` en `Vehicle`.
+  - UI pendiente: el encabezado de Planes en celular, el contraste del rojo del dictado, las fotos de
+    `FinalizeWorkOrderModal` al cancelar, y el botón atrás con un modal sin guardar.
+  - Unificar `WORK_ORDER_FINALIZED` con `WORK_ORDER_CLOSED`.
+  - CAM-92, CAM-73, CAM-69/70 y CAM-76.
   - Probar con sesión de admin CAM-82 y CAM-53.
   - Reactivar el aviso de contraseñas filtradas de Chrome.
-  - Probar la cámara en un Android real.
+  - Probar la cámara en un Android real. Ahora también hay que mirar el destello de toque de CAM-124.
   - El foco de los modales del admin.
 
 ## Decisiones abiertas
 
-- **Resueltas en esta sesión (con Guido):**
-  - CAM-106 se cierra como cubierta por CAM-52; no se construye nada en el Resumen.
-  - Pasar los totales de Gastos al backend no entra en este sprint, para no tocar una pantalla que
-    ya anda tres días antes de la entrega. Va en su propia card.
-  - El PR de la release nombra todas las cards del sprint, también las que no tuvieron código.
+- **Nueva:** quién hace CAM-96 y cómo se reparte el trabajo de notificaciones. Bloquea 4 de las 7 cards de
+  Guido del sprint.
+- **Nueva:** si CAM-119 (push) se queda en el Sprint 9.
 - **Siguen de antes:**
-  - Si el técnico tiene que poder cargar gastos y comprobantes. Hay que charlarlo con Tomás.
-  - Protección de rama en `develop` con CI obligatorio.
-  - CI para el frontend.
+  - Si el técnico tiene que poder cargar gastos y comprobantes; hay que charlarlo con Tomás.
+  - Protección de rama en `develop` con CI obligatorio, y CI para el frontend.
   - Unicidad del username con acentos.
-  - Resetear la contraseña no invalida los tokens ya emitidos.
-  - CAM-33.
-  - Épicas CAM-7 y CAM-9.
+  - Que resetear la contraseña no invalida los tokens ya emitidos.
+  - CAM-33, y las épicas CAM-7 y CAM-9.
   - Paginación.
   - `workOrderId` de las completions cargadas a mano.
   - `bugfix/` contra `feature/`.
@@ -410,6 +412,25 @@ Lo que se probó y no funcionó, con el motivo. Se agrega, no se reemplaza.
   que pedía ya se veía en la pestaña Gastos. Las cards de la épica de Gastos (CAM-104 a 109) se
   escribieron sin contrastarlas con lo que ya había hecho CAM-52. Antes de arrancar una card de esa
   épica, conviene compararla con la pantalla real (mejor con una captura) para ver qué aporta de nuevo.
+- **2026-10-21** — Para editar por API la descripción de una card de Jira **sin perder la imagen
+  embebida**, sirvió escribirla en **ADF** (`contentFormat: "adf"`). La imagen va como `mediaSingle` >
+  `media` con `type: "file"`, el `id` de la URL `blob:` que muestra la lectura en markdown y
+  `collection: ""`. Para conservar el ancho, se suma `width` + `widthType: "pixel"` en el `mediaSingle`. Se
+  confirma leyendo con `expand: renderedFields`: tiene que aparecer un `<img>` del adjunto. Esto resuelve
+  los problemas del 2026-09-05 y el 2026-09-26, que venían de escribir en markdown.
+- **2026-10-21** — Para chequear finales de línea, `grep -c $'\r$'` en Git Bash dio un falso positivo:
+  contó todas las líneas como CRLF. Lo confiable es `git ls-files --eol` o contar bytes con Python. Con
+  `core.autocrlf=true`, el repo guarda LF y el working tree está en general en CRLF. Los archivos reescritos
+  con scripts quedaron en LF, cosa que Git normaliza igual al commitear.
+- **2026-10-21** — Repetición del callejón del 2026-09-24: un `python - <<'EOF'` con acentos dentro del
+  heredoc rompió la comparación de textos (`Órdenes` → `�rdenes`), y además un `sed` sobre el script lo dejó
+  roto. Para reemplazos con acentos, usar Read + Edit directo.
+- **2026-10-21** — Una clase BEM nueva, `expenses__row`, chocó con una existente (la grilla de gráficos de
+  Gastos, `display: grid`) y desarmó la tabla. Lint y build no lo detectan; Guido lo vio en la app. Antes de
+  inventar un nombre de clase, buscarlo con `grep -rn` en `src/`.
+- **2026-10-21** — El panel del navegador no deja usar las herramientas de página sobre un archivo local
+  (`file://`). Para probar CSS suelto anduvo servir la carpeta temporal con `py -m http.server` desde una
+  entrada temporal de `.claude/launch.json`, revertida con `git checkout` al terminar.
 
 ## Historial
 
@@ -635,3 +656,8 @@ Una línea por sesión.
 - **2026-10-14** (continuación 2) — CAM-106 revisada contra Gastos y cerrada sin código, como
   cubierta por CAM-52. Se abrieron los PRs del sprint 7 a `develop` (#21, con el CI en verde, y fe#29),
   con todas las cards del sprint en la descripción.
+- **2026-10-21** — `/retomar`: el Sprint 7 lo mergeó Tomás el 19/10. Panorama del Sprint 9: 3 cards de UI de
+  Guido libres y 4 de notificaciones bloqueadas por CAM-96. Se creó `release/guido-sprint-9` y se hicieron
+  CAM-122 (texto del buscador de Gastos que se desplaza), CAM-123 (renglón de gastos que abre la OT) y
+  CAM-124 (tarjeta del checklist entera clickeable). Las tres pasaron por `revisor`, se mergearon y se
+  pushearon, y sus cards de Jira quedaron completas en ADF sin perder las capturas.
