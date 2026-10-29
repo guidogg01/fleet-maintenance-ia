@@ -42,8 +42,16 @@ src/main/java/org/fleetguard/
 ├── mapper/                       # entidad <-> DTO
 ├── exception/                    # excepciones de dominio + @RestControllerAdvice uniforme
 ├── storage/                      # PhotoStorage (interfaz) + implementación local
+├── event/                        # eventos de dominio (records) + sus @TransactionalEventListener (avisos, CAM-96)
 └── auth/                         # DriverResolver (interfaz) + stand-in por header, TEMPORAL hasta login real
 ```
+
+**Avisos in-app (CAM-96):** quien avisa no toca la tabla de avisos. Un servicio
+publica un evento (`ApplicationEventPublisher`), un listener de `event/` decide a
+quién avisar, y el aviso sale por `NotificationDispatcher` → `NotificationService`.
+Si el aviso no nace de un cambio sino del paso del tiempo, una tarea `@Scheduled`
+llama directo al dispatcher (ver `TripReminderService`). Detalle y porqué en
+`docs/api/CAM-96-notifications-contract.md`.
 
 **Un endpoint nuevo toca varias capas:** entidad (si hace falta tabla nueva),
 repository, service con la lógica, DTOs de entrada/salida, mapper entidad↔DTO,

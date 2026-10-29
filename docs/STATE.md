@@ -1,6 +1,6 @@
 # Estado — FleetGuard
 
-Última actualización: **2026-10-21**
+Última actualización: **2026-10-29**
 Se escribe con el ritual de `docs/guias/sesiones.md`, siempre con confirmación
 de Guido.
 
@@ -8,64 +8,65 @@ de Guido.
 
 ## Dónde estamos
 
-El Sprint 9 - Entrega 2 cierra el 24/10. Tomás mergeó el Sprint 7 a `develop` el 19/10 (#21 y fe#29). De
-las 7 cards de Guido, las 3 de UI están hechas en `release/guido-sprint-9`. Las 4 de notificaciones no se
-pueden arrancar hasta que exista CAM-96 (la base de notificaciones, de Tomás), que no tiene descripción ni
-rama.
+La Entrega 2 está cerrada: Tomás mergeó el Sprint 9 a `develop` el 24/10 (#22 y fe#30) y taggeó
+`v1.2.0-entrega-2` en `main`. Entraron las notificaciones completas (bandeja, configuración por tipo, email y
+push al navegador) y las 3 cards de UI de Guido. Corre el **Sprint 9 - Entrega 3** (24/10 al 31/10), con 8
+cards (4 de cada uno), y al 29/10 no se arrancó ninguna.
 
 ## En qué quedé
 
-- **Sprint 9, frontend, todo mergeado a `release/guido-sprint-9` y pusheado (`489d746`):**
-  - **CAM-122** (`a4240c5`): el placeholder del buscador de Gastos ahora es un texto propio
-    (`expenses__search-hint`). Con el cursor encima o el foco se desplaza hasta mostrar "…N° de
-    comprobante" y vuelve. El recorrido se calcula con `100cqw - 100%`, sin JS. Además, el campo hereda la
-    fuente de la app, y en alto contraste el texto queda en `GrayText`.
-  - **CAM-123** (`5ddb9b8`): todo el renglón de "Detalle de gastos" abre la OT (`expenses__table-row`,
-    mismo patrón que `.work-orders__row`). Los botones de la OT y del comprobante cortan la propagación del
-    click, y seleccionar texto no abre la OT.
-  - **CAM-124** (`6477160`): tocar cualquier parte de la tarjeta de un control del checklist cambia OK /
-    defecto. Una capa `::after` del propio interruptor se estira sobre la tarjeta (`checklist-item--toggle`).
-    Con el defecto desplegado cubre solo el renglón del título.
-  - Las tres pasaron por `revisor`, Guido las probó en la app y las descripciones de Jira quedaron completas
-    (Historia, Solución, Criterios de aceptación), sin perder las capturas.
-- **Jira:** CAM-122 y CAM-124 están en "Pendiente a Integrar" y CAM-123 sigue en "En curso".
-- **Repos locales:**
-  - El frontend quedó en `release/guido-sprint-9`.
-  - El backend sigue en `release/guido-sprint-7`, que ya está mergeada con squash. Hay que pasarlo a
-    `develop` antes de tocarlo.
-  - En el backend sigue sin commitear `.idea/misc.xml`, que no se sube.
+- **Sprint 9 (Entrega 2), hecho y entregado.** Todo se armó en `release/guido-sprint-9`, que Tomás tomó como
+  base de su rama de notificaciones. Su PR se mergeó con squash, así que los commits de Guido no aparecen en
+  `develop`, pero el contenido sí:
+  - **CAM-96 (parte de Guido):** contrato de `/api/notifications`, interfaz `NotificationService`,
+    `NotificationDispatcher` (cada aviso en su propia transacción, y un error no rompe lo que lo originó) y la
+    campanita en los tres roles. El modelo de datos, la bandeja y el email los hizo Tomás (CAM-96/97/98/117/118).
+  - **CAM-99 / CAM-100:** eventos de OT (`WorkOrderTechnicianChangedEvent`, `WorkOrderCancelledEvent`) y su
+    listener. Se avisa al técnico al asignar, reasignar, desasignar o cancelar una OT, también si se cancela
+    desde el calendario.
+  - **CAM-101:** `TripReminderService`, que cada hora recuerda cerrar los viajes abiertos hace más de 12 h,
+    una sola vez por viaje (`trips.reminder_sent_at`).
+  - **CAM-119:** push al navegador con `web-push` + Bouncy Castle (dependencia aprobada), service worker,
+    "Activar en este dispositivo" en el panel de la campanita y claves VAPID de desarrollo commiteadas. Probado
+    en el Chrome de Guido: la push de prueba llegó a Windows. **No se probó en el celular**, porque necesita
+    HTTPS; quedó anotado en Jira.
+  - Todo pasó por `revisor` (2 rondas: notificaciones y push), con los hallazgos corregidos. Backend en 93,6%
+    de cobertura.
+- **Backlog:** épicas nuevas CAM-125 (Cumplimiento y documentación) y CAM-126 (App en el celular), y 9 historias
+  nuevas (CAM-127 a 135, sin SP). Al Sprint 9 - Entrega 3 entraron CAM-127, 130, 133, 134 y 135.
+- **Repos locales:** los dos siguen en `release/guido-sprint-9`, que **ya no hay que usar**: un merge contra
+  `develop` choca por el squash. En el backend sigue sin commitear `.idea/misc.xml`, que no se sube.
 
 ## Qué sigue
 
-- **Sprint 9 (cierra el 24/10):**
-  - Hablar hoy con Tomás por **CAM-96**. Las cards CAM-99, 100, 101 y 119 (11 de los 14 SP de Guido)
-    dependen de ella. Opciones:
-    - que él la arranque ya;
-    - que la tome Guido;
-    - acordar entre los dos la entidad, el evento y el endpoint, y que cada uno arme sus avisos encima.
-  - Refinar CAM-100 y CAM-119, que están vacías.
-    - CAM-119 (push, 5 SP) es la de más riesgo: necesita service worker, permiso del navegador, claves
-      VAPID y que el backend envíe a una suscripción. Evaluar si se saca del sprint o se recorta.
-  - Datos para CAM-101: `Trip` ya guarda `openedById` desde CAM-87, así que esa parte de la card ya está
-    resuelta.
-  - Pasar CAM-123 a "Pendiente a Integrar".
-  - Al final del sprint, abrir el PR de `release/guido-sprint-9` a `develop` en el frontend (y en el backend
-    si entra código ahí).
+- **Antes de tocar código:** pasar los dos repos a `develop` y hacer `pull`.
+- **Sprint 9 - Entrega 3 (cierra el 31/10):** hablar con Tomás qué entra realmente, porque quedan 2 días y no
+  arrancó nada. Las cards de Guido:
+  - CAM-109 (gastos operativos fuera de una OT);
+  - CAM-130 (historial a PDF): falta decidir si se arma en el navegador o con una librería;
+  - CAM-134 (tiempo fuera de servicio): hay que empezar a guardar cuándo se resuelve un defecto;
+  - CAM-135 (defectos recurrentes).
+- **Avisarle a Tomás:**
+  - CAM-133 (QR, suya) depende de CAM-131 (deploy con HTTPS), que no está en el sprint;
+  - CAM-102/103 tienen la descripción desactualizada (`Trip.openedById` existe desde CAM-87);
+  - CAM-136 no tiene descripción ni épica.
+- **Pruebas pendientes:**
+  - de punta a punta: asignar una OT a un técnico con las push activadas y ver que le llegue con la app cerrada;
+  - tocar la notificación y que abra la pantalla del aviso.
 - **Bugs encontrados por `revisor`, para cards propias:**
   - `ChecklistItemCard.handlePhotoChange` llama a `onChange` con el `state` que tenía al empezar la subida.
     Si mientras sube la foto el chofer edita el título o pasa el control a OK, al terminar se pisa todo.
   - En Gastos, mientras carga la OT de un renglón, el botón de OT de otro renglón (y los de "Órdenes más
     costosas") pueden pedir una segunda OT en paralelo. Se arregla con
     `disabled={openingWorkOrderId !== null}`.
-- **Después de cerrar el sprint** (Guido lo pospuso a propósito):
-  - Pasar CAM-65, 104, 105, 107 y 108 a Finalizada.
-  - Crear las cards de totales de Gastos en el backend, categorías configurables, el técnico cargando
-    gastos y el botón cortado en el detalle de una OT en celular.
+- **Pospuestas a propósito por Guido:**
+  - Confirmar que CAM-65, 104, 105, 107 y 108 quedaron en Finalizada.
+  - Crear las cards de totales de Gastos en el backend, categorías configurables, el técnico cargando gastos
+    y el botón cortado en el detalle de una OT en celular.
   - Refinar CAM-116.
-  - Revisar CAM-110 a 113.
 - **Siguen de antes:**
-  - Turnos: que el backend no deje reprogramar ni cancelar un turno hecho o cancelado, que valide las
-    fechas pasadas al editar, y que un turno pase a "Atrasado" con la pantalla quieta.
+  - Turnos: que el backend no deje reprogramar ni cancelar un turno hecho o cancelado, que valide las fechas
+    pasadas al editar, y que un turno pase a "Atrasado" con la pantalla quieta.
   - `@Version` en `Vehicle`.
   - UI pendiente: el encabezado de Planes en celular, el contraste del rojo del dictado, las fotos de
     `FinalizeWorkOrderModal` al cancelar, y el botón atrás con un modal sin guardar.
@@ -73,14 +74,15 @@ rama.
   - CAM-92, CAM-73, CAM-69/70 y CAM-76.
   - Probar con sesión de admin CAM-82 y CAM-53.
   - Reactivar el aviso de contraseñas filtradas de Chrome.
-  - Probar la cámara en un Android real. Ahora también hay que mirar el destello de toque de CAM-124.
+  - Probar la cámara en un Android real, y el destello de toque de CAM-124.
   - El foco de los modales del admin.
 
 ## Decisiones abiertas
 
-- **Nueva:** quién hace CAM-96 y cómo se reparte el trabajo de notificaciones. Bloquea 4 de las 7 cards de
-  Guido del sprint.
-- **Nueva:** si CAM-119 (push) se queda en el Sprint 9.
+- **Nueva:** qué entra en el Sprint 9 - Entrega 3 y qué pasa al siguiente.
+- **Nueva:** el hosting para CAM-131 (deploy con HTTPS). Destraba las push en el celular, la PWA (CAM-132) y
+  el QR (CAM-133). Antes hay que resolver `ddl-auto` contra una base que no se puede perder.
+- **Nueva:** librería de PDF (CAM-130) y de QR (CAM-133): dependencias nuevas a decidir.
 - **Siguen de antes:**
   - Si el técnico tiene que poder cargar gastos y comprobantes; hay que charlarlo con Tomás.
   - Protección de rama en `develop` con CI obligatorio, y CI para el frontend.
@@ -431,6 +433,24 @@ Lo que se probó y no funcionó, con el motivo. Se agrega, no se reemplaza.
 - **2026-10-21** — El panel del navegador no deja usar las herramientas de página sobre un archivo local
   (`file://`). Para probar CSS suelto anduvo servir la carpeta temporal con `py -m http.server` desde una
   entrada temporal de `.claude/launch.json`, revertida con `git checkout` al terminar.
+- **2026-10-23** — El navegador integrado de la sesión tiene las notificaciones bloqueadas
+  (`pushManager.subscribe` falla con "permission denied"): el service worker se registra, pero las push se
+  prueban en el Chrome de Guido. Para la UI de la campanita sin backend, sirvió reemplazar `window.fetch` desde
+  la consola con respuestas inventadas (solo para mirar, no queda en el código).
+- **2026-10-23** — Una clave VAPID mal copiada hace que Bouncy Castle tire `IllegalArgumentException`, no
+  `GeneralSecurityException`. Si no se atrapan las dos, el backend entero no levanta por la push.
+- **2026-10-23** — `PushService.send()` de `web-push` espera la respuesta sin límite y arma un cliente HTTP por
+  envío. Se usa `sendAsync` con `get(10, SECONDS)` y `cancel` si vence el tiempo.
+- **2026-10-23** — Las excepciones de un `@TransactionalEventListener` AFTER_COMMIT le llegan al pedido como 500,
+  aunque el cambio ya esté guardado. Atraparlas adentro de la transacción no alcanza: queda marcada para
+  rollback y el commit tira igual. Se resolvió con un `TransactionTemplate` REQUIRES_NEW y el `catch` afuera
+  (`NotificationDispatcher`).
+- **2026-10-24** — Al cerrar el Sprint 9, el PR de Tomás (squash) incluyó toda `release/guido-sprint-9`, porque
+  su rama salió de ella. Los commits de Guido no aparecen en `develop` pero el contenido sí: se confirma con
+  `git merge-base --is-ancestor <sha> origin/<rama de Tomás>`. Repetición del falso positivo del 2026-09-25.
+- **2026-10-24** — Se dio por hecho que CAM-96 figuraba "Finalizada" sin estar terminada (como CAM-90 en
+  2026-10-12). Era falso: Tomás la había terminado y mergeado esa misma mañana. Antes de afirmar algo así,
+  mirar `origin/develop` y los PRs del otro.
 
 ## Historial
 
@@ -661,3 +681,8 @@ Una línea por sesión.
   CAM-122 (texto del buscador de Gastos que se desplaza), CAM-123 (renglón de gastos que abre la OT) y
   CAM-124 (tarjeta del checklist entera clickeable). Las tres pasaron por `revisor`, se mergearon y se
   pushearon, y sus cards de Jira quedaron completas en ADF sin perder las capturas.
+- **2026-10-23/29** — `/retomar`. CAM-96 (contrato, `NotificationService`, `NotificationDispatcher` y la
+  campanita), CAM-99/100 (avisos al técnico sobre sus OTs), CAM-101 (recordatorio de cerrar el viaje) y CAM-119
+  (push al navegador con `web-push`, probada en Chrome; falta el celular). Todo pasó por `revisor` en 2 rondas,
+  se mergeó a `release/guido-sprint-9` y se pusheó, y Tomás lo incluyó en la Entrega 2 (`v1.2.0-entrega-2`).
+  Backlog: épicas CAM-125 y CAM-126, e historias CAM-127 a 135.
