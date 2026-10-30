@@ -8,51 +8,64 @@ de Guido.
 
 ## Dónde estamos
 
-La Entrega 2 está cerrada: Tomás mergeó el Sprint 9 a `develop` el 24/10 (#22 y fe#30) y taggeó
-`v1.2.0-entrega-2` en `main`. Entraron las notificaciones completas (bandeja, configuración por tipo, email y
-push al navegador) y las 3 cards de UI de Guido. Corre el **Sprint 9 - Entrega 3** (24/10 al 31/10), con 8
-cards (4 de cada uno), y al 29/10 no se arrancó ninguna.
+La Entrega 2 está cerrada (`v1.2.0-entrega-2`). Corre el **Sprint 9 - Entrega 3** (24/10 al 31/10). De las 4
+cards de Guido, CAM-134 y CAM-135 están hechas y en `release/guido-sprint-9-entrega-3`, en "Pendiente a
+Integrar". Quedan CAM-109 y CAM-130, y el PR de la release a `develop`.
 
 ## En qué quedé
 
-- **Sprint 9 (Entrega 2), hecho y entregado.** Todo se armó en `release/guido-sprint-9`, que Tomás tomó como
-  base de su rama de notificaciones. Su PR se mergeó con squash, así que los commits de Guido no aparecen en
-  `develop`, pero el contenido sí:
-  - **CAM-96 (parte de Guido):** contrato de `/api/notifications`, interfaz `NotificationService`,
-    `NotificationDispatcher` (cada aviso en su propia transacción, y un error no rompe lo que lo originó) y la
-    campanita en los tres roles. El modelo de datos, la bandeja y el email los hizo Tomás (CAM-96/97/98/117/118).
-  - **CAM-99 / CAM-100:** eventos de OT (`WorkOrderTechnicianChangedEvent`, `WorkOrderCancelledEvent`) y su
-    listener. Se avisa al técnico al asignar, reasignar, desasignar o cancelar una OT, también si se cancela
-    desde el calendario.
-  - **CAM-101:** `TripReminderService`, que cada hora recuerda cerrar los viajes abiertos hace más de 12 h,
-    una sola vez por viaje (`trips.reminder_sent_at`).
-  - **CAM-119:** push al navegador con `web-push` + Bouncy Castle (dependencia aprobada), service worker,
-    "Activar en este dispositivo" en el panel de la campanita y claves VAPID de desarrollo commiteadas. Probado
-    en el Chrome de Guido: la push de prueba llegó a Windows. **No se probó en el celular**, porque necesita
-    HTTPS; quedó anotado en Jira.
-  - Todo pasó por `revisor` (2 rondas: notificaciones y push), con los hallazgos corregidos. Backend en 93,6%
-    de cobertura.
-- **Backlog:** épicas nuevas CAM-125 (Cumplimiento y documentación) y CAM-126 (App en el celular), y 9 historias
-  nuevas (CAM-127 a 135, sin SP). Al Sprint 9 - Entrega 3 entraron CAM-127, 130, 133, 134 y 135.
-- **Repos locales:** los dos siguen en `release/guido-sprint-9`, que **ya no hay que usar**: un merge contra
-  `develop` choca por el squash. En el backend sigue sin commitear `.idea/misc.xml`, que no se sube.
+- **Release del sprint:** `release/guido-sprint-9-entrega-3`, creada desde `develop` en los dos repos y
+  pusheada. Reemplaza a `release/guido-sprint-9`, que ya no se usa por el squash.
+- **CAM-135 (defectos recurrentes), hecha:**
+  - **Regla:** un control del checklist que falla 3 veces en 30 días en el mismo vehículo es recurrente; los
+    dos números están en `application.yml`. Cuentan todos los defectos: bloqueantes o no, y abiertos o resueltos.
+  - **Aviso:** es un tipo nuevo, `recurring_defect`, configurable en Notificaciones. Se manda una sola vez por
+    ventana y se anota en `recurring_defect_alerts`.
+  - **Endpoint:** `GET /api/defects/recurring`, solo para admin.
+  - **Pantallas:** "Controles con fallos recurrentes" en el detalle del vehículo y "Defectos recurrentes" en el
+    Resumen.
+  - **Contrato:** `docs/api/CAM-135-recurring-defects-contract.md`.
+- **Resumen reacomodado:** a la izquierda, mantenimiento (Estado de la flota y Próximos vencimientos); a la
+  derecha, defectos (recientes y recurrentes). "Próximos vencimientos" va en un renglón desde 1280 px y en dos
+  entre 641 y 1279 px. Las columnas quedan parejas.
+- **CAM-134 (tiempo fuera de servicio), hecha:**
+  - **Fecha de resolución:** `Defect.resolvedAt` se carga al finalizar la OT del defecto; solo vale la primera.
+  - **Endpoint:** `GET /api/downtime?from&to[&vehicleId]`, solo para admin. Calcula horas fuera de servicio
+    (los bloqueantes solapados se unen), paradas, disponibilidad y reparación promedio (en total, internas y
+    externas). El período se corta en el momento actual.
+  - **Pantallas:** "Disponibilidad de la flota" al final del Resumen, con un solo vehículo (el que más tiempo
+    estuvo parado) en lugar del ranking de la card, y "Disponibilidad" en el detalle del vehículo. Las dos
+    tienen filtro de período.
+  - **Contrato:** `docs/api/CAM-134-downtime-contract.md`.
+- **Verificación:** las dos pasaron por `revisor`, con los hallazgos menores corregidos. El backend tiene 511
+  tests y 94,5% de cobertura. Las dos se probaron contra el backend real con los datos de demo.
+- **Jira:** las dos cards están en "Pendiente a Integrar". Guido les agrega un comentario con las decisiones y
+  el cambio de alcance (un solo vehículo en vez del ranking).
+- **Repos locales:**
+  - Los dos están en `release/guido-sprint-9-entrega-3`, al día con `origin`.
+  - En el backend sigue `.idea/misc.xml` sin commitear; no se sube.
+  - **La base local tiene datos de prueba:**
+    - 4 ciclos de pre-viaje y post-viaje de `carlos.gomez` en AF102ZT, con la falla de luces;
+    - un aviso "Defecto recurrente" en la campanita del admin;
+    - la tabla `recurring_defect_alerts` y la columna `defects.resolved_at`, que creó `ddl-auto`.
 
 ## Qué sigue
 
-- **Antes de tocar código:** pasar los dos repos a `develop` y hacer `pull`.
-- **Sprint 9 - Entrega 3 (cierra el 31/10):** hablar con Tomás qué entra realmente, porque quedan 2 días y no
-  arrancó nada. Las cards de Guido:
-  - CAM-109 (gastos operativos fuera de una OT);
-  - CAM-130 (historial a PDF): falta decidir si se arma en el navegador o con una librería;
-  - CAM-134 (tiempo fuera de servicio): hay que empezar a guardar cuándo se resuelve un defecto;
-  - CAM-135 (defectos recurrentes).
+- **Sprint 9 - Entrega 3 (cierra el 31/10):**
+  - Abrir el PR de `release/guido-sprint-9-entrega-3` a `develop` en los dos repos, con CAM-134 y CAM-135 en la
+    descripción.
+  - Hablar con Tomás si CAM-109 y CAM-130 entran o pasan al sprint siguiente:
+    - CAM-130 se puede hacer sin dependencias, con una vista de impresión en el navegador;
+    - CAM-109 necesita decidir el modelo de gastos, así que conviene pasarla.
 - **Avisarle a Tomás:**
-  - CAM-133 (QR, suya) depende de CAM-131 (deploy con HTTPS), que no está en el sprint;
-  - CAM-102/103 tienen la descripción desactualizada (`Trip.openedById` existe desde CAM-87);
+  - Cuando haga CAM-127 (vencimientos de documentación), sumarla como otra causa de "fuera de servicio" en
+    `DowntimeService` (contrato de CAM-134, §1).
+  - CAM-133 (QR, suya) depende de CAM-131 (deploy con HTTPS), que no está en el sprint.
+  - CAM-102/103 tienen la descripción desactualizada: `Trip.openedById` existe desde CAM-87.
   - CAM-136 no tiene descripción ni épica.
 - **Pruebas pendientes:**
-  - de punta a punta: asignar una OT a un técnico con las push activadas y ver que le llegue con la app cerrada;
-  - tocar la notificación y que abra la pantalla del aviso.
+  - Asignar una OT a un técnico con las push activadas y ver que le llegue con la app cerrada.
+  - Tocar la notificación y que abra la pantalla del aviso.
 - **Bugs encontrados por `revisor`, para cards propias:**
   - `ChecklistItemCard.handlePhotoChange` llama a `onChange` con el `state` que tenía al empezar la subida.
     Si mientras sube la foto el chofer edita el título o pasa el control a OK, al terminar se pisa todo.
@@ -79,11 +92,13 @@ cards (4 de cada uno), y al 29/10 no se arrancó ninguna.
 
 ## Decisiones abiertas
 
-- **Nueva:** qué entra en el Sprint 9 - Entrega 3 y qué pasa al siguiente.
-- **Nueva:** el hosting para CAM-131 (deploy con HTTPS). Destraba las push en el celular, la PWA (CAM-132) y
-  el QR (CAM-133). Antes hay que resolver `ddl-auto` contra una base que no se puede perder.
-- **Nueva:** librería de PDF (CAM-130) y de QR (CAM-133): dependencias nuevas a decidir.
+- **Sigue, y urge:** qué entra en el Sprint 9 - Entrega 3 y qué pasa al siguiente (CAM-109, CAM-130).
+- **Nueva:** si la documentación vencida (CAM-127) va a contar como fuera de servicio. La card la dejaba
+  abierta; por ahora no cuenta.
 - **Siguen de antes:**
+  - El hosting para CAM-131 (deploy con HTTPS). Destraba las push en el celular, la PWA (CAM-132) y el QR
+    (CAM-133). Antes hay que resolver `ddl-auto` contra una base que no se puede perder.
+  - Librería de PDF (CAM-130) y de QR (CAM-133): dependencias nuevas a decidir.
   - Si el técnico tiene que poder cargar gastos y comprobantes; hay que charlarlo con Tomás.
   - Protección de rama en `develop` con CI obligatorio, y CI para el frontend.
   - Unicidad del username con acentos.
@@ -452,6 +467,18 @@ Lo que se probó y no funcionó, con el motivo. Se agrega, no se reemplaza.
   2026-10-12). Era falso: Tomás la había terminado y mergeado esa misma mañana. Antes de afirmar algo así,
   mirar `origin/develop` y los PRs del otro.
 
+- **2026-10-29** — Pasar "Próximos vencimientos" a la columna izquierda del Resumen no tapó el hueco: lo mudó a
+  la derecha (1026 contra 583 px), porque la tarjeta no tenía tope de alto. Se emparejó con tope y scroll (5
+  visibles en un renglón) y mostrando 6 defectos recientes. Antes de mover una tarjeta para llenar un hueco,
+  conviene mirar si tiene alto fijo.
+- **2026-10-29** — Con el panel del navegador oculto, las capturas fallan una y otra vez ("Screenshot timed
+  out"), aunque se fije el tamaño con `resize_window`; a veces salen viejas o a medio dibujar. Se verificó
+  leyendo la página con `javascript_tool` (textos, alturas y columnas de la grilla). Es una variante del
+  callejón del 2026-10-14.
+- **2026-10-29** — Repetición del callejón del 2026-10-03: el backend de Guido en 8080 arrancó a las 22:18 y
+  CAM-134 se escribió después, así que `/api/downtime` daba 404 y todas las tarjetas decían "No se pudo cargar
+  la disponibilidad." Se resolvió reiniciándolo.
+
 ## Historial
 
 Una línea por sesión.
@@ -686,3 +713,7 @@ Una línea por sesión.
   (push al navegador con `web-push`, probada en Chrome; falta el celular). Todo pasó por `revisor` en 2 rondas,
   se mergeó a `release/guido-sprint-9` y se pusheó, y Tomás lo incluyó en la Entrega 2 (`v1.2.0-entrega-2`).
   Backlog: épicas CAM-125 y CAM-126, e historias CAM-127 a 135.
+- **2026-10-29** (continuación) — `/retomar`. Se creó `release/guido-sprint-9-entrega-3`. CAM-135 (defectos
+  recurrentes, con aviso configurable) y CAM-134 (tiempo fuera de servicio y reparación promedio, con
+  `Defect.resolvedAt`), más el reacomodo del Resumen en mantenimiento y defectos. Las dos pasaron por `revisor`,
+  se mergearon a la release y se pushearon; quedaron en Jira en "Pendiente a Integrar".
