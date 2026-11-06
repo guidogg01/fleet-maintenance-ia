@@ -1,6 +1,6 @@
 # Estado — FleetGuard
 
-Última actualización: **2026-10-29**
+Última actualización: **2026-11-05**
 Se escribe con el ritual de `docs/guias/sesiones.md`, siempre con confirmación
 de Guido.
 
@@ -8,107 +8,114 @@ de Guido.
 
 ## Dónde estamos
 
-La Entrega 2 está cerrada (`v1.2.0-entrega-2`). Corre el **Sprint 9 - Entrega 3** (24/10 al 31/10). De las 4
-cards de Guido, CAM-134 y CAM-135 están hechas y en `release/guido-sprint-9-entrega-3`, en "Pendiente a
-Integrar". Quedan CAM-109 y CAM-130, y el PR de la release a `develop`.
+El Sprint 9 - Entrega 3 cerró el 31/10: las cuatro cards de Guido (CAM-109, CAM-130, CAM-134 y CAM-135) y las de
+Tomás están mergeadas a `develop` en los dos repos. Se revisó y amplió el backlog con 15 cards nuevas, de CAM-137 a
+CAM-151, sin estimar. Falta elegir con Tomás qué entra en el próximo sprint.
 
 ## En qué quedé
 
-- **Release del sprint:** `release/guido-sprint-9-entrega-3`, creada desde `develop` en los dos repos y
-  pusheada. Reemplaza a `release/guido-sprint-9`, que ya no se usa por el squash.
-- **CAM-135 (defectos recurrentes), hecha:**
-  - **Regla:** un control del checklist que falla 3 veces en 30 días en el mismo vehículo es recurrente; los
-    dos números están en `application.yml`. Cuentan todos los defectos: bloqueantes o no, y abiertos o resueltos.
-  - **Aviso:** es un tipo nuevo, `recurring_defect`, configurable en Notificaciones. Se manda una sola vez por
-    ventana y se anota en `recurring_defect_alerts`.
-  - **Endpoint:** `GET /api/defects/recurring`, solo para admin.
-  - **Pantallas:** "Controles con fallos recurrentes" en el detalle del vehículo y "Defectos recurrentes" en el
-    Resumen.
-  - **Contrato:** `docs/api/CAM-135-recurring-defects-contract.md`.
-- **Resumen reacomodado:** a la izquierda, mantenimiento (Estado de la flota y Próximos vencimientos); a la
-  derecha, defectos (recientes y recurrentes). "Próximos vencimientos" va en un renglón desde 1280 px y en dos
-  entre 641 y 1279 px. Las columnas quedan parejas.
-- **CAM-134 (tiempo fuera de servicio), hecha:**
-  - **Fecha de resolución:** `Defect.resolvedAt` se carga al finalizar la OT del defecto; solo vale la primera.
-  - **Endpoint:** `GET /api/downtime?from&to[&vehicleId]`, solo para admin. Calcula horas fuera de servicio
-    (los bloqueantes solapados se unen), paradas, disponibilidad y reparación promedio (en total, internas y
-    externas). El período se corta en el momento actual.
-  - **Pantallas:** "Disponibilidad de la flota" al final del Resumen, con un solo vehículo (el que más tiempo
-    estuvo parado) en lugar del ranking de la card, y "Disponibilidad" en el detalle del vehículo. Las dos
-    tienen filtro de período.
-  - **Contrato:** `docs/api/CAM-134-downtime-contract.md`.
-- **Verificación:** las dos pasaron por `revisor`, con los hallazgos menores corregidos. El backend tiene 511
-  tests y 94,5% de cobertura. Las dos se probaron contra el backend real con los datos de demo.
-- **Jira:** las dos cards están en "Pendiente a Integrar". Guido les agrega un comentario con las decisiones y
-  el cambio de alcance (un solo vehículo en vez del ranking).
+- **CAM-130 (historial a PDF), hecha:**
+  - **Cómo funciona:** botón "Exportar historial" en el detalle del vehículo. El documento sale con la impresión del
+    navegador ("Guardar como PDF"), sin dependencias nuevas.
+  - **Período:** arranca en los últimos 12 meses, con el mismo selector que Gastos.
+  - **OTs que entran:** las creadas o finalizadas en el período.
+  - **Resolución del defecto:** sale de su OT, porque el contrato no expone `resolvedAt`.
+  - **Sin contrato nuevo:** es solo frontend.
+- **CAM-109 (gastos operativos), hecha:**
+  - **Modelo:** entidad aparte, `VehicleExpense`, con FK real al vehículo, para que el `truncate` del seed la limpie.
+    `POST`, `PUT` y `DELETE /api/expenses`, solo admin.
+  - **Listado:** `GET /api/expenses` une los dos tipos y suma el filtro `origin`. En los operativos, los campos de la
+    OT vienen en null.
+  - **Costo total:** `/costs` y el costo por km incluyen estos gastos, así que ya no son comparables con los de antes.
+  - **Pantallas:**
+    - "Cargar gasto" en Gastos y en la tarjeta Costos;
+    - "Por categoría" pasa a barras;
+    - "Por origen" suma "Operativo", con un cuarto color validado.
+  - **Sin comprobante.**
+  - **Contrato:** `docs/api/CAM-109-operating-expenses-contract.md`.
+- **Verificación:**
+  - **`revisor`:** pasaron las dos, con sus hallazgos corregidos.
+  - **Tests:** backend en verde con el piso de cobertura cumplido. Después de mergear con Tomás, `develop` da 586.
+  - **Contra el backend real:** se probaron las dos.
+  - **Impresión de CAM-130:** se generó el PDF con Chrome headless, pero el diálogo de impresión no se probó en un
+    navegador real.
+- **PRs:** `fleet-maintenance#24` y `fleet-maintenance-fe#32`, mergeados el 31/10. El CI del backend pasó.
+- **Jira:**
+  - CAM-109 y CAM-130 están en "Pendiente a Integrar".
+  - Las cards nuevas de CAM-137 a CAM-151 están en "Tareas por hacer", sin puntos, sprint ni responsable.
+  - CAM-144 es de tipo Error.
 - **Repos locales:**
-  - Los dos están en `release/guido-sprint-9-entrega-3`, al día con `origin`.
-  - En el backend sigue `.idea/misc.xml` sin commitear; no se sube.
-  - **La base local tiene datos de prueba:**
-    - 4 ciclos de pre-viaje y post-viaje de `carlos.gomez` en AF102ZT, con la falla de luces;
-    - un aviso "Defecto recurrente" en la campanita del admin;
-    - la tabla `recurring_defect_alerts` y la columna `defects.resolved_at`, que creó `ddl-auto`.
+  - Los dos están en `develop`, al día con `origin`, y en el backend sigue `.idea/misc.xml` sin commitear.
+  - En el frontend se instalaron las dependencias nuevas (`vitest`, `qrcode`), sin cambiar archivos del repo.
+  - **Tests del frontend:** no corren en esta máquina; las dependencias nuevas piden Node 22 y acá hay 20.20.2.
+- **La base local:** tiene la tabla `vehicle_expenses`, vacía, creada por `ddl-auto`. Siguen los datos de prueba de
+  AF102ZT y el aviso de defecto recurrente del 29/10.
 
 ## Qué sigue
 
-- **Sprint 9 - Entrega 3 (cierra el 31/10):**
-  - Abrir el PR de `release/guido-sprint-9-entrega-3` a `develop` en los dos repos, con CAM-134 y CAM-135 en la
-    descripción.
-  - Hablar con Tomás si CAM-109 y CAM-130 entran o pasan al sprint siguiente:
-    - CAM-130 se puede hacer sin dependencias, con una vista de impresión en el navegador;
-    - CAM-109 necesita decidir el modelo de gastos, así que conviene pasarla.
-- **Avisarle a Tomás:**
-  - Cuando haga CAM-127 (vencimientos de documentación), sumarla como otra causa de "fuera de servicio" en
-    `DowntimeService` (contrato de CAM-134, §1).
-  - CAM-133 (QR, suya) depende de CAM-131 (deploy con HTTPS), que no está en el sprint.
-  - CAM-102/103 tienen la descripción desactualizada: `Trip.openedById` existe desde CAM-87.
-  - CAM-136 no tiene descripción ni épica.
+- **Próximo sprint:** elegirlo con Tomás entre las cards nuevas y las de seguridad y deploy:
+  - **Base:** CAM-73 (proteger la API), CAM-69, CAM-55, CAM-33 reescrita y CAM-131 (deploy).
+  - **Funcionalidad:**
+    - CAM-137 (fecha estimada por km);
+    - CAM-138 (viajes de la flota);
+    - CAM-139 (defecto en ruta);
+    - CAM-140 (comparar vehículos);
+    - CAM-141 a CAM-143 (avisos).
+  - **Orden de dependencias:**
+    - CAM-144 antes de CAM-145 y CAM-146;
+    - CAM-73 antes de CAM-151;
+    - CAM-69 antes de CAM-149.
+- **Cards propuestas que no se crearon:**
+  - migraciones de schema;
+  - CI del frontend, con Node 22;
+  - los dos bugs de `revisor`;
+  - documentación de la Entrega 3, que no existe en `develop`.
+- **Limpieza del backlog, propuesta y no hecha:**
+  - cerrar CAM-19 (ya cubierta) y CAM-64 (sin cards abiertas);
+  - reescribir CAM-33;
+  - decidir y cerrar CAM-56;
+  - renombrar CAM-10.
+  - **No cerrar CAM-95:** ahora tiene cuatro cards nuevas.
+- **Avisarle a Tomás:** el cambio de contrato de `GET /api/expenses` en CAM-109, con campos de la OT que pueden venir
+  en null.
 - **Pruebas pendientes:**
-  - Asignar una OT a un técnico con las push activadas y ver que le llegue con la app cerrada.
-  - Tocar la notificación y que abra la pantalla del aviso.
-- **Bugs encontrados por `revisor`, para cards propias:**
-  - `ChecklistItemCard.handlePhotoChange` llama a `onChange` con el `state` que tenía al empezar la subida.
-    Si mientras sube la foto el chofer edita el título o pasa el control a OK, al terminar se pisa todo.
-  - En Gastos, mientras carga la OT de un renglón, el botón de OT de otro renglón (y los de "Órdenes más
-    costosas") pueden pedir una segunda OT en paralelo. Se arregla con
-    `disabled={openingWorkOrderId !== null}`.
-- **Pospuestas a propósito por Guido:**
-  - Confirmar que CAM-65, 104, 105, 107 y 108 quedaron en Finalizada.
-  - Crear las cards de totales de Gastos en el backend, categorías configurables, el técnico cargando gastos
-    y el botón cortado en el detalle de una OT en celular.
-  - Refinar CAM-116.
-- **Siguen de antes:**
-  - Turnos: que el backend no deje reprogramar ni cancelar un turno hecho o cancelado, que valide las fechas
-    pasadas al editar, y que un turno pase a "Atrasado" con la pantalla quieta.
-  - `@Version` en `Vehicle`.
-  - UI pendiente: el encabezado de Planes en celular, el contraste del rojo del dictado, las fotos de
-    `FinalizeWorkOrderModal` al cancelar, y el botón atrás con un modal sin guardar.
-  - Unificar `WORK_ORDER_FINALIZED` con `WORK_ORDER_CLOSED`.
-  - CAM-92, CAM-73, CAM-69/70 y CAM-76.
-  - Probar con sesión de admin CAM-82 y CAM-53.
-  - Reactivar el aviso de contraseñas filtradas de Chrome.
-  - Probar la cámara en un Android real, y el destello de toque de CAM-124.
-  - El foco de los modales del admin.
+  - Exportar un PDF desde Chrome con el backend reiniciado: que proponga el nombre del archivo y no imprima la app.
+  - Mirar Gastos a ojo, porque no se pudo sacar una captura.
+  - Siguen de antes: push con la app cerrada, y tocar la notificación.
+- **Deuda chica de CAM-109 y CAM-130:**
+  - Sumar los endpoints de gastos a Postman.
+  - Validar en el backend el tope de 1000 caracteres de la descripción.
+  - En un navegador fuera de Argentina, la tabla y el CSV muestran el gasto operativo un día antes.
+- **Detectados al revisar:**
+  - `utils/dateFormat.ts:7` usa `hour12: false`.
+  - `WorkOrderService.java:434` usa `LocalDate.now()`, que en un servidor en UTC corre el día. Hay que tenerlo en
+    cuenta para CAM-131.
+- **Bugs de `revisor`, para cards propias:** se mantienen los dos de antes, la foto del checklist que pisa ediciones y
+  Gastos que abre dos OTs en paralelo.
+- **Siguen de antes:** turnos, `@Version` en `Vehicle`, UI pendiente, `WORK_ORDER_FINALIZED`/`CLOSED`, pruebas con
+  sesión de admin, aviso de contraseñas de Chrome, cámara en Android y el foco de los modales.
 
 ## Decisiones abiertas
 
-- **Sigue, y urge:** qué entra en el Sprint 9 - Entrega 3 y qué pasa al siguiente (CAM-109, CAM-130).
-- **Nueva:** si la documentación vencida (CAM-127) va a contar como fuera de servicio. La card la dejaba
-  abierta; por ahora no cuenta.
+- **Nueva:** qué entra en el próximo sprint, y si va primero funcionalidad para la demo o seguridad y deploy. Depende de
+  la fecha y la forma de la próxima entrega, que no está anotada en ningún lado.
+- **Nueva:** Node 22 en esta máquina y en el CI del frontend, que piden `vitest` y `jest-dom`.
+- **Nueva:** quién ve las señales sobre choferes de CAM-146 (daños en el viaje) y CAM-147 (inspecciones exprés).
+- **Cambia:** la documentación vencida ya bloquea la salida del vehículo (CAM-127). Lo que sigue abierto es si cuenta en
+  el tiempo fuera de servicio.
 - **Siguen de antes:**
-  - El hosting para CAM-131 (deploy con HTTPS). Destraba las push en el celular, la PWA (CAM-132) y el QR
-    (CAM-133). Antes hay que resolver `ddl-auto` contra una base que no se puede perder.
-  - Librería de PDF (CAM-130) y de QR (CAM-133): dependencias nuevas a decidir.
-  - Si el técnico tiene que poder cargar gastos y comprobantes; hay que charlarlo con Tomás.
-  - Protección de rama en `develop` con CI obligatorio, y CI para el frontend.
-  - Unicidad del username con acentos.
-  - Que resetear la contraseña no invalida los tokens ya emitidos.
-  - CAM-33, y las épicas CAM-7 y CAM-9.
-  - Paginación.
-  - `workOrderId` de las completions cargadas a mano.
-  - `bugfix/` contra `feature/`.
-  - `STATE.md` cuando Tomás mergea sin ritual.
-  - `ddl-auto`, versionado de schema, CAM-21 y CAM-66.
+  - el hosting de CAM-131, y `ddl-auto` contra una base que no se puede perder (migraciones con Flyway sería una
+    dependencia nueva);
+  - si el técnico carga gastos;
+  - protección de rama en `develop`;
+  - usernames con acentos;
+  - tokens al resetear la contraseña;
+  - CAM-33, CAM-7 y CAM-9;
+  - paginación;
+  - `workOrderId` de las completions;
+  - `bugfix/` contra `feature/`;
+  - `STATE.md` cuando Tomás mergea;
+  - `ddl-auto` y versionado de schema.
 
 ## Callejones sin salida
 
@@ -478,6 +485,23 @@ Lo que se probó y no funcionó, con el motivo. Se agrega, no se reemplaza.
 - **2026-10-29** — Repetición del callejón del 2026-10-03: el backend de Guido en 8080 arrancó a las 22:18 y
   CAM-134 se escribió después, así que `/api/downtime` daba 404 y todas las tarjetas decían "No se pudo cargar
   la disponibilidad." Se resolvió reiniciándolo.
+- **2026-10-30** — `hour12: false` en `es-AR` puede escribir las 00:05 como "24:05" según el motor. En Node 20 pasa; en
+  Chrome no se vio. Con `hourCycle: 'h23'` sale bien en los dos.
+- **2026-10-30** — Para verificar la impresión de CAM-130 no se puede abrir el diálogo, y la herramienta de lectura no
+  muestra PDFs sin poppler. Anduvo mandar el HTML del documento a un servidor local, pasarlo por
+  `chrome --headless --print-to-pdf` para contar páginas y sacar una captura al ancho de A4 con `@media print` pasado a
+  `all`.
+- **2026-10-30** — `overflow-wrap: anywhere` en una tabla de ancho automático achica las columnas cortas hasta cortar
+  palabras ("Bloqu-eante"). Se resolvió con `white-space: nowrap` en fecha, gravedad, estado y usuario.
+- **2026-10-30** — Con 8080 y 5173 ocupados por procesos de Guido, `preview_start` movió los servidores de prueba a otros
+  puertos sin avisar, y el backend falló porque el `.cmd` fijaba el puerto. Antes de levantar, mirar quién ocupa cada
+  puerto. Para probar en paralelo: backend con `--server.port=8081` y CORS a 5174, y Vite con `VITE_API_BASE_URL` en
+  5174.
+- **2026-10-30** — Jira rechazó pasar CAM-130 a "En refinamiento" porque ya estaba en "Pendiente a Integrar", movida a
+  mano. Antes de recorrer las transiciones, mirar con `getTransitionsForJiraIssue` en qué estado está la card.
+- **2026-10-31** — Después de un merge de Tomás con dependencias nuevas, `npm test` y `npm run build` fallan hasta correr
+  `npm install`. Aun instaladas, `vitest` no levanta con Node 20: tira `Cannot read properties of undefined (reading
+  'bind')` en `undici`.
 
 ## Historial
 
@@ -717,3 +741,7 @@ Una línea por sesión.
   recurrentes, con aviso configurable) y CAM-134 (tiempo fuera de servicio y reparación promedio, con
   `Defect.resolvedAt`), más el reacomodo del Resumen en mantenimiento y defectos. Las dos pasaron por `revisor`,
   se mergearon a la release y se pushearon; quedaron en Jira en "Pendiente a Integrar".
+- **2026-10-30/31** — CAM-130 (historial del vehículo a PDF con la impresión del navegador) y CAM-109 (gastos
+  operativos en una entidad aparte, con costo total). Las dos pasaron por `revisor`, entraron en la release y se
+  mergearon a `develop` (#24, fe#32) junto con lo de Tomás. Revisión del backlog contra `develop`: 15 cards nuevas
+  sin estimar, de CAM-137 a CAM-151.
