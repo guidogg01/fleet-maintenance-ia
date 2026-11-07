@@ -1,6 +1,6 @@
 # Estado — FleetGuard
 
-Última actualización: **2026-11-05**
+Última actualización: **2026-11-06**
 Se escribe con el ritual de `docs/guias/sesiones.md`, siempre con confirmación
 de Guido.
 
@@ -8,104 +8,110 @@ de Guido.
 
 ## Dónde estamos
 
-El Sprint 9 - Entrega 3 cerró el 31/10: las cuatro cards de Guido (CAM-109, CAM-130, CAM-134 y CAM-135) y las de
-Tomás están mergeadas a `develop` en los dos repos. Se revisó y amplió el backlog con 15 cards nuevas, de CAM-137 a
-CAM-151, sin estimar. Falta elegir con Tomás qué entra en el próximo sprint.
+Arrancó el Sprint 9 - Entrega 4. De las cinco cards de Guido, cuatro ya están hechas y mergeadas en
+`release/guido-sprint-9-entrega-4`, en los dos repos: CAM-137, CAM-152, CAM-148 y CAM-140. Queda CAM-139, que
+conviene acordar con Tomás porque se cruza con CAM-146.
 
 ## En qué quedé
 
-- **CAM-130 (historial a PDF), hecha:**
-  - **Cómo funciona:** botón "Exportar historial" en el detalle del vehículo. El documento sale con la impresión del
-    navegador ("Guardar como PDF"), sin dependencias nuevas.
-  - **Período:** arranca en los últimos 12 meses, con el mismo selector que Gastos.
-  - **OTs que entran:** las creadas o finalizadas en el período.
-  - **Resolución del defecto:** sale de su OT, porque el contrato no expone `resolvedAt`.
-  - **Sin contrato nuevo:** es solo frontend.
-- **CAM-109 (gastos operativos), hecha:**
-  - **Modelo:** entidad aparte, `VehicleExpense`, con FK real al vehículo, para que el `truncate` del seed la limpie.
-    `POST`, `PUT` y `DELETE /api/expenses`, solo admin.
-  - **Listado:** `GET /api/expenses` une los dos tipos y suma el filtro `origin`. En los operativos, los campos de la
-    OT vienen en null.
-  - **Costo total:** `/costs` y el costo por km incluyen estos gastos, así que ya no son comparables con los de antes.
+- **CAM-137 (fecha estimada de los planes por km), hecha:**
+  - **Backend:** `KmPerDayEstimator` calcula los km por día con las inspecciones y los mantenimientos hechos de
+    los últimos 60 días. El dato sale como `estimatedDueDate` en `nextMaintenance` del estado de la flota.
+  - **Lecturas que no cuentan:**
+    - las menores a una anterior, mirando toda la historia;
+    - las mayores al km actual;
+    - una primera lectura con más de 5.000 km hasta la siguiente;
+    - las que darían un ritmo de más de 1.500 km/día.
+  - **Frontend:** "Próximos vencimientos" ubica los planes por km según esa fecha. Los vencidos por km van a la
+    primera franja, y los que no se pueden estimar, a "Por km, sin estimación" (solo los por vencer).
+  - **Contrato:** sección "Fecha estimada" de `CAM-40-fleet-status-contract.md`.
+- **CAM-152 (km fuera de lo normal en un viaje), hecha:**
+  - **Cuándo avisa:** al cerrar el viaje con el post-viaje, si el viaje recorrió más del doble o menos de la
+    mitad del promedio del vehículo, o si el chofer cargó menos km de los que ya tenía.
+  - **El promedio:** sale de los últimos 10 viajes, y hacen falta al menos 3. Los viajes ya marcados cuentan.
+  - **Pre-viaje mal cargado:** si CAM-90 descartó el km del pre-viaje, el viaje no se compara con el promedio.
+  - **La marca:** queda en `trips` y se ve en el historial del vehículo, también en el impreso.
+  - **El aviso:** tipo nuevo, `TRIP_KM_ANOMALY`, configurable.
+  - **Contrato:** `CAM-152-trip-km-alert-contract.md`.
+- **CAM-148 (pausar una OT), hecha:**
+  - **El estado:** `en_espera`, con un motivo obligatorio. Con "otro", el comentario también es obligatorio.
+  - **Lo que permite:** no se finaliza sin retomarla, pero sí se cancela. Cuenta como OT abierta en todos lados,
+    a partir de una lista única, `WorkOrderStatus.OPEN`.
+  - **El tiempo:** cada pausa queda en `work_order_pauses`, y el detalle muestra el tiempo total en espera.
+  - **Quién pausa:** el técnico y también el admin, por las OTs externas.
   - **Pantallas:**
-    - "Cargar gasto" en Gastos y en la tarjeta Costos;
-    - "Por categoría" pasa a barras;
-    - "Por origen" suma "Operativo", con un cuarto color validado.
-  - **Sin comprobante.**
-  - **Contrato:** `docs/api/CAM-109-operating-expenses-contract.md`.
+    - el badge con el motivo;
+    - el filtro por estado;
+    - "Poner en espera" en su propia fila en el celular del técnico.
+  - **Contrato:** `CAM-148-work-order-pause-contract.md`.
+- **CAM-140 (comparar vehículos), hecha:**
+  - **El endpoint:** `GET /api/vehicles/comparison`, solo admin, con la pantalla en `/vehiculos/comparar`.
+  - **De dónde salen los números:** reusa Gastos, `DowntimeService`, `RecurringDefectService` y las lecturas
+    de CAM-137.
+  - **Las reglas:**
+    - los km cuentan desde la primera lectura si arrancan a mitad del período, y el costo por km divide solo
+      los gastos desde ahí;
+    - el costo por km de la flota es el gasto total sobre los km totales;
+    - la marca "Para revisar" se decide contra el promedio sin redondear.
+  - **Contrato:** `CAM-140-vehicle-comparison-contract.md`.
 - **Verificación:**
-  - **`revisor`:** pasaron las dos, con sus hallazgos corregidos.
-  - **Tests:** backend en verde con el piso de cobertura cumplido. Después de mergear con Tomás, `develop` da 586.
-  - **Contra el backend real:** se probaron las dos.
-  - **Impresión de CAM-130:** se generó el PDF con Chrome headless, pero el diálogo de impresión no se probó en un
-    navegador real.
-- **PRs:** `fleet-maintenance#24` y `fleet-maintenance-fe#32`, mergeados el 31/10. El CI del backend pasó.
-- **Jira:**
-  - CAM-109 y CAM-130 están en "Pendiente a Integrar".
-  - Las cards nuevas de CAM-137 a CAM-151 están en "Tareas por hacer", sin puntos, sprint ni responsable.
-  - CAM-144 es de tipo Error.
-- **Repos locales:**
-  - Los dos están en `develop`, al día con `origin`, y en el backend sigue `.idea/misc.xml` sin commitear.
-  - En el frontend se instalaron las dependencias nuevas (`vitest`, `qrcode`), sin cambiar archivos del repo.
-  - **Tests del frontend:** no corren en esta máquina; las dependencias nuevas piden Node 22 y acá hay 20.20.2.
-- **La base local:** tiene la tabla `vehicle_expenses`, vacía, creada por `ddl-auto`. Siguen los datos de prueba de
-  AF102ZT y el aviso de defecto recurrente del 29/10.
+  - **`revisor`:** pasaron las cuatro cards, con sus hallazgos corregidos (CAM-137 en dos rondas).
+  - **Tests:** el backend da 669, con el piso de cobertura cumplido. Frontend: tsc, lint y build en verde. Los
+    tests nuevos de vitest se ejecutaron en el navegador, cargando los módulos desde Vite.
+  - **Contra la base real:** se probaron las cuatro, con un backend propio en 8081 y Vite en 5174.
+- **Base local de Guido:**
+  - se borraron a mano los CHECK de `notifications.type` y `work_orders.status`;
+  - `seed-demo.sql` y su generador ahora los borran solos;
+  - el backend de IntelliJ hay que reiniciarlo para tener CAM-148 y CAM-140.
+- **Datos de prueba que quedaron:**
+  - **vehículos:** ZZ137AA, ZZ137BB y ZZ137CC (marca "Prueba"), que bajan los promedios de Comparar;
+  - **viajes:** 6 de ZZ137AA;
+  - **OTs:** "Prueba CAM-148" (en espera) y "Prueba CAM-148 tecnico" (en proceso).
+- **Repos:**
+  - los dos quedaron en `release/guido-sprint-9-entrega-4`, pusheada, igual que las cuatro `feature/CAM-*`;
+  - en el backend sigue `.idea/misc.xml` sin commitear.
 
 ## Qué sigue
 
-- **Próximo sprint:** elegirlo con Tomás entre las cards nuevas y las de seguridad y deploy:
-  - **Base:** CAM-73 (proteger la API), CAM-69, CAM-55, CAM-33 reescrita y CAM-131 (deploy).
-  - **Funcionalidad:**
-    - CAM-137 (fecha estimada por km);
-    - CAM-138 (viajes de la flota);
-    - CAM-139 (defecto en ruta);
-    - CAM-140 (comparar vehículos);
-    - CAM-141 a CAM-143 (avisos).
-  - **Orden de dependencias:**
-    - CAM-144 antes de CAM-145 y CAM-146;
-    - CAM-73 antes de CAM-151;
-    - CAM-69 antes de CAM-149.
-- **Cards propuestas que no se crearon:**
-  - migraciones de schema;
-  - CI del frontend, con Node 22;
+- **CAM-139 (defecto reportado en viaje):** antes de arrancar, acordar con Tomás cómo conviven en Defectos la
+  marca "Reportado en viaje" y la de su CAM-146 ("Ocurrió en el viaje").
+- **Jira:** Guido pasa CAM-137, CAM-152, CAM-148 y CAM-140 a "Pendiente a Integrar".
+- **Avisarle a Tomás:**
+  - su base necesita los `ALTER` de CAM-148 y CAM-152, o correr el seed;
+  - CAM-148 agrega `en_espera`, que cambia lo que cuenta su CAM-155;
+  - CAM-146 depende de CAM-144, que no está en el sprint.
+- **Limpiar los datos de prueba** de ZZ137, cuando Guido termine de probar.
+- **Deuda chica:**
+  - el texto del aviso de CAM-152 dice "el doble" y "la mitad", y solo es correcto con `ratio: 2`;
+  - el "hoy" de la fecha estimada y de los vencimientos usa la zona del servidor, que hay que tener en cuenta
+    para CAM-131.
+- **Siguen de antes:**
+  - Node 22 para los tests del frontend;
+  - push con la app cerrada y al tocar la notificación;
+  - la deuda de CAM-109 y CAM-130 (Postman, el tope de 1.000 caracteres, el gasto un día antes fuera de
+    Argentina);
+  - `hour12: false` en `dateFormat.ts`;
+  - `LocalDate.now()` en `WorkOrderService`;
   - los dos bugs de `revisor`;
-  - documentación de la Entrega 3, que no existe en `develop`.
-- **Limpieza del backlog, propuesta y no hecha:**
-  - cerrar CAM-19 (ya cubierta) y CAM-64 (sin cards abiertas);
-  - reescribir CAM-33;
-  - decidir y cerrar CAM-56;
-  - renombrar CAM-10.
-  - **No cerrar CAM-95:** ahora tiene cuatro cards nuevas.
-- **Avisarle a Tomás:** el cambio de contrato de `GET /api/expenses` en CAM-109, con campos de la OT que pueden venir
-  en null.
-- **Pruebas pendientes:**
-  - Exportar un PDF desde Chrome con el backend reiniciado: que proponga el nombre del archivo y no imprima la app.
-  - Mirar Gastos a ojo, porque no se pudo sacar una captura.
-  - Siguen de antes: push con la app cerrada, y tocar la notificación.
-- **Deuda chica de CAM-109 y CAM-130:**
-  - Sumar los endpoints de gastos a Postman.
-  - Validar en el backend el tope de 1000 caracteres de la descripción.
-  - En un navegador fuera de Argentina, la tabla y el CSV muestran el gasto operativo un día antes.
-- **Detectados al revisar:**
-  - `utils/dateFormat.ts:7` usa `hour12: false`.
-  - `WorkOrderService.java:434` usa `LocalDate.now()`, que en un servidor en UTC corre el día. Hay que tenerlo en
-    cuenta para CAM-131.
-- **Bugs de `revisor`, para cards propias:** se mantienen los dos de antes, la foto del checklist que pisa ediciones y
-  Gastos que abre dos OTs en paralelo.
-- **Siguen de antes:** turnos, `@Version` en `Vehicle`, UI pendiente, `WORK_ORDER_FINALIZED`/`CLOSED`, pruebas con
-  sesión de admin, aviso de contraseñas de Chrome, cámara en Android y el foco de los modales.
+  - turnos, `@Version` en `Vehicle`, foco de los modales y cámara en Android.
 
 ## Decisiones abiertas
 
-- **Nueva:** qué entra en el próximo sprint, y si va primero funcionalidad para la demo o seguridad y deploy. Depende de
-  la fecha y la forma de la próxima entrega, que no está anotada en ningún lado.
-- **Nueva:** Node 22 en esta máquina y en el CI del frontend, que piden `vitest` y `jest-dom`.
-- **Nueva:** quién ve las señales sobre choferes de CAM-146 (daños en el viaje) y CAM-147 (inspecciones exprés).
-- **Cambia:** la documentación vencida ya bloquea la salida del vehículo (CAM-127). Lo que sigue abierto es si cuenta en
-  el tiempo fuera de servicio.
+- **Nuevas, tomadas en esta sesión y pendientes de confirmar con Tomás:**
+  - el tope de 1.500 km/día de CAM-137;
+  - "Por km, sin estimación" muestra solo los planes por vencer;
+  - en CAM-152, los viajes marcados entran en el promedio;
+  - en CAM-148, el admin también pausa;
+  - en CAM-140, el promedio es de toda la flota y no por tipo de vehículo.
+- **Nueva:** si la reparación promedio de CAM-134 descuenta el tiempo en espera de CAM-148. Hoy no lo descuenta.
+- **Nueva:** si CAM-144 entra al sprint, porque sin ella CAM-146 no se puede hacer.
+- **Cambia:** el orden del sprint ya está resuelto (funcionalidad primero; seguridad y deploy quedaron afuera).
+  Sigue abierta la fecha de la entrega.
 - **Siguen de antes:**
-  - el hosting de CAM-131, y `ddl-auto` contra una base que no se puede perder (migraciones con Flyway sería una
-    dependencia nueva);
+  - Node 22 en esta máquina y en el CI del frontend;
+  - quién ve las señales sobre choferes de CAM-146 y CAM-147;
+  - el hosting de CAM-131, y `ddl-auto` contra una base que no se puede perder (que cada enum nuevo obliga a
+    borrar un CHECK a mano hace más urgentes las migraciones);
   - si el técnico carga gastos;
   - protección de rama en `develop`;
   - usernames con acentos;
@@ -114,8 +120,7 @@ CAM-151, sin estimar. Falta elegir con Tomás qué entra en el próximo sprint.
   - paginación;
   - `workOrderId` de las completions;
   - `bugfix/` contra `feature/`;
-  - `STATE.md` cuando Tomás mergea;
-  - `ddl-auto` y versionado de schema.
+  - `STATE.md` cuando Tomás mergea.
 
 ## Callejones sin salida
 
@@ -503,6 +508,28 @@ Lo que se probó y no funcionó, con el motivo. Se agrega, no se reemplaza.
   `npm install`. Aun instaladas, `vitest` no levanta con Node 20: tira `Cannot read properties of undefined (reading
   'bind')` en `undici`.
 
+- **2026-11-05** — Una proyección JPQL (`select new ...`) sobre un record con dos constructores falló al
+  ejecutarse con "Cannot cast Double to Long": Hibernate eligió el constructor que no era. Al arrancar no da
+  error, solo al consultar. Se resolvió con un record por fuente, cada uno con un solo constructor
+  (`KmReadingRow.FromInspection` / `FromCompletion`).
+- **2026-11-06** — Repetición del callejón de `users.role` (2026-09-16): `ddl-auto` no actualiza el CHECK de un
+  enum en una base que ya existe.
+  - `notifications_type_check` rechazó el aviso nuevo de CAM-152 sin romper el post-viaje, y solo quedó el
+    error en el log.
+  - `work_orders_status_check` hizo que pausar una OT diera 500.
+  - Se borran los CHECK en vez de recrearlos, y `seed-demo.sql` ahora lo hace solo.
+- **2026-11-06** — Repetición del callejón del 2026-10-03: el backend de IntelliJ arrancó antes de CAM-140, y
+  `/vehicles/comparison` cayó en `/vehicles/{id}` ("No existe un vehículo con id comparison").
+  - Antes de investigar un 404 raro, comparar la hora de arranque del proceso con la del commit.
+  - Del lado del frontend pasa lo mismo: después de cambiar de rama, la pestaña de Chrome puede quedar con el
+    componente viejo hasta hacer Ctrl+Shift+R.
+- **2026-11-06** — En CAM-140, dejar los km en null cuando las lecturas arrancan tarde en el período dejó a toda
+  la flota en "Sin datos": los datos de demo empiezan a mitad de los últimos 12 meses. Se cambió por contar los
+  km desde la primera lectura y dividir solo los gastos desde esa fecha.
+- **2026-11-06** — Repetición de los callejones del 2026-09-20 y el 2026-09-24: un `python - <<'EOF'` con texto
+  Java largo se cortó con "unexpected EOF". Anduvo escribir el script con Write en la carpeta temporal y
+  correrlo con `python -I`.
+
 ## Historial
 
 Una línea por sesión.
@@ -745,3 +772,8 @@ Una línea por sesión.
   operativos en una entidad aparte, con costo total). Las dos pasaron por `revisor`, entraron en la release y se
   mergearon a `develop` (#24, fe#32) junto con lo de Tomás. Revisión del backlog contra `develop`: 15 cards nuevas
   sin estimar, de CAM-137 a CAM-151.
+- **2026-11-05/06** — `/retomar` y repaso del Sprint 9 - Entrega 4 (9 cards, todavía sin iniciar en Jira). Se
+  creó `release/guido-sprint-9-entrega-4` y se hicieron CAM-137 (fecha estimada de los planes por km), CAM-152
+  (aviso de km fuera de lo normal en un viaje), CAM-148 (pausar una OT con un motivo) y CAM-140 (comparar
+  vehículos). Las cuatro pasaron por `revisor`, se probaron contra la base, se mergearon a la release y se
+  pushearon.
