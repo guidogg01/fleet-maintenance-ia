@@ -1,6 +1,6 @@
 # Estado — FleetGuard
 
-Última actualización: **2026-11-06**
+Última actualización: **2026-11-11**
 Se escribe con el ritual de `docs/guias/sesiones.md`, siempre con confirmación
 de Guido.
 
@@ -8,83 +8,82 @@ de Guido.
 
 ## Dónde estamos
 
-Arrancó el Sprint 9 - Entrega 4. De las cinco cards de Guido, cuatro ya están hechas y mergeadas en
-`release/guido-sprint-9-entrega-4`, en los dos repos: CAM-137, CAM-152, CAM-148 y CAM-140. Queda CAM-139, que
-conviene acordar con Tomás porque se cruza con CAM-146.
+La Entrega 4 está integrada en `develop` en los dos repos: Tomás mergeó el 06/11 las cinco cards de Guido (#26 y
+fe#34) y las suyas (#25 y fe#33). Está activo el "Sprint 10 - Entrega 3" (07/11 al 14/11), con 8 cards por hacer;
+las de Guido son CAM-141, CAM-142, CAM-143 y CAM-149. Las 9 cards de la Entrega 4 están en "Finalizada" y sin
+sprint.
 
 ## En qué quedé
 
-- **CAM-137 (fecha estimada de los planes por km), hecha:**
-  - **Backend:** `KmPerDayEstimator` calcula los km por día con las inspecciones y los mantenimientos hechos de
-    los últimos 60 días. El dato sale como `estimatedDueDate` en `nextMaintenance` del estado de la flota.
-  - **Lecturas que no cuentan:**
-    - las menores a una anterior, mirando toda la historia;
-    - las mayores al km actual;
-    - una primera lectura con más de 5.000 km hasta la siguiente;
-    - las que darían un ritmo de más de 1.500 km/día.
-  - **Frontend:** "Próximos vencimientos" ubica los planes por km según esa fecha. Los vencidos por km van a la
-    primera franja, y los que no se pueden estimar, a "Por km, sin estimación" (solo los por vencer).
-  - **Contrato:** sección "Fecha estimada" de `CAM-40-fleet-status-contract.md`.
-- **CAM-152 (km fuera de lo normal en un viaje), hecha:**
-  - **Cuándo avisa:** al cerrar el viaje con el post-viaje, si el viaje recorrió más del doble o menos de la
-    mitad del promedio del vehículo, o si el chofer cargó menos km de los que ya tenía.
-  - **El promedio:** sale de los últimos 10 viajes, y hacen falta al menos 3. Los viajes ya marcados cuentan.
-  - **Pre-viaje mal cargado:** si CAM-90 descartó el km del pre-viaje, el viaje no se compara con el promedio.
-  - **La marca:** queda en `trips` y se ve en el historial del vehículo, también en el impreso.
-  - **El aviso:** tipo nuevo, `TRIP_KM_ANOMALY`, configurable.
-  - **Contrato:** `CAM-152-trip-km-alert-contract.md`.
-- **CAM-148 (pausar una OT), hecha:**
-  - **El estado:** `en_espera`, con un motivo obligatorio. Con "otro", el comentario también es obligatorio.
-  - **Lo que permite:** no se finaliza sin retomarla, pero sí se cancela. Cuenta como OT abierta en todos lados,
-    a partir de una lista única, `WorkOrderStatus.OPEN`.
-  - **El tiempo:** cada pausa queda en `work_order_pauses`, y el detalle muestra el tiempo total en espera.
-  - **Quién pausa:** el técnico y también el admin, por las OTs externas.
-  - **Pantallas:**
-    - el badge con el motivo;
-    - el filtro por estado;
-    - "Poner en espera" en su propia fila en el celular del técnico.
-  - **Contrato:** `CAM-148-work-order-pause-contract.md`.
-- **CAM-140 (comparar vehículos), hecha:**
-  - **El endpoint:** `GET /api/vehicles/comparison`, solo admin, con la pantalla en `/vehiculos/comparar`.
-  - **De dónde salen los números:** reusa Gastos, `DowntimeService`, `RecurringDefectService` y las lecturas
-    de CAM-137.
-  - **Las reglas:**
-    - los km cuentan desde la primera lectura si arrancan a mitad del período, y el costo por km divide solo
-      los gastos desde ahí;
-    - el costo por km de la flota es el gasto total sobre los km totales;
-    - la marca "Para revisar" se decide contra el promedio sin redondear.
-  - **Contrato:** `CAM-140-vehicle-comparison-contract.md`.
+- **CAM-139 (reportar un defecto durante el viaje), hecha e integrada:**
+  - **El endpoint:** `POST /api/vehicles/{id}/road-defects`, solo el CHOFER que abrió el viaje abierto. Sin viaje
+    da 409 `NO_OPEN_TRIP`, y con el viaje de otro, 409 `NOT_YOUR_TRIP`.
+  - **El modelo:** el reporte es una inspección `ON_ROAD` de una sola respuesta dentro del viaje abierto. No lo
+    cierra ni toca el km. `POST /inspections` no acepta `on-road`.
+  - **Qué falla:** un control sí/no del pre-viaje del vehículo, o `road-otro` ("Otro problema"), que no cuenta para
+    recurrentes.
+  - **Si es bloqueante:** avisa al admin ("Reportado durante el viaje…") y deja el vehículo no disponible. El viaje
+    se cierra igual con el post-viaje.
+  - **Lo que no cuenta:** no suma en la actividad del chofer (CAM-91) y no aparece como inspección en el historial.
+  - **La marca:** `DefectDto.source`, que se ve como "Reportado en viaje" en Defectos, el historial, el impreso y
+    los recientes.
+  - **Frontend:** "Reportar un problema" en el viaje propio y `RoadDefectForm.tsx`. El panel del defecto pasó a
+    `DefectFields.tsx`, compartido con el checklist.
+  - **Contrato:** `CAM-139-road-defect-contract.md`.
 - **Verificación:**
-  - **`revisor`:** pasaron las cuatro cards, con sus hallazgos corregidos (CAM-137 en dos rondas).
-  - **Tests:** el backend da 669, con el piso de cobertura cumplido. Frontend: tsc, lint y build en verde. Los
-    tests nuevos de vitest se ejecutaron en el navegador, cargando los módulos desde Vite.
-  - **Contra la base real:** se probaron las cuatro, con un backend propio en 8081 y Vite en 5174.
-- **Base local de Guido:**
-  - se borraron a mano los CHECK de `notifications.type` y `work_orders.status`;
-  - `seed-demo.sql` y su generador ahora los borran solos;
-  - el backend de IntelliJ hay que reiniciarlo para tener CAM-148 y CAM-140.
+  - **`revisor`:** encontró un bloqueante ("Otro problema" en el listado de recurrentes), ya corregido. Lo menor
+    quedó anotado en el contrato.
+  - **Tests:** 688 en verde en la release, con el piso de cobertura. Frontend: lint y build en verde.
+  - **Contra la base real:** con backend en 8081 y Vite en 5174, el chofer en el celular y el admin en el
+    escritorio.
+- **Integración:**
+  - Tomás mergeó `develop` en la release para resolver los conflictos.
+  - En `develop` conviven `source` y su `occurredOnTrip` (CAM-146), que solo mira el post-viaje.
+  - "Otro problema" sigue afuera de los recurrentes, con la clave unificada de CAM-144.
+  - Se revisó leyendo `develop`, sin correr nada.
+- **CI:** no corrió ninguna vez desde el 07/11, ni en los PRs ni en `develop`. La cuenta de GitHub de Tomás está
+  bloqueada por facturación.
+- **Jira:**
+  - el sprint 75 se llamaba "Sprint 9 - Entrega 4" y se renombró a "Sprint 10 - Entrega 3";
+  - Guido lo inició el 11/11 y sacó al backlog las 9 cards de la Entrega 4, que se habían terminado antes del
+    inicio;
+  - limpieza del backlog de Tomás del 07/11: CAM-151, 147, 145, 76, 56 y 34 descartadas, CAM-19 cubierta por
+    CAM-117/118 y CAM-69 sumada a CAM-73;
+  - CAM-144 está "Finalizada" sin sprint (entró con el PR de Tomás), y CAM-158 (talleres externos) es nueva, sin
+    sprint ni responsable.
+- **Base local de Guido:** se borró a mano `inspections_type_check`, y el seed lo hace solo.
 - **Datos de prueba que quedaron:**
-  - **vehículos:** ZZ137AA, ZZ137BB y ZZ137CC (marca "Prueba"), que bajan los promedios de Comparar;
-  - **viajes:** 6 de ZZ137AA;
-  - **OTs:** "Prueba CAM-148" (en espera) y "Prueba CAM-148 tecnico" (en proceso).
+  - ZZ137AA tiene 3 defectos "Prueba CAM-139". Uno es bloqueante y está abierto, así que figura "No disponible".
+  - Hay un viaje de carlos.gomez cerrado en 55.250 km, con un aviso de km bajo de CAM-152.
+  - Siguen los de antes de ZZ137.
 - **Repos:**
-  - los dos quedaron en `release/guido-sprint-9-entrega-4`, pusheada, igual que las cuatro `feature/CAM-*`;
+  - los dos quedaron en `release/guido-sprint-9-entrega-4`, 2 commits atrás del remoto (el merge de Tomás);
   - en el backend sigue `.idea/misc.xml` sin commitear.
 
 ## Qué sigue
 
-- **CAM-139 (defecto reportado en viaje):** antes de arrancar, acordar con Tomás cómo conviven en Defectos la
-  marca "Reportado en viaje" y la de su CAM-146 ("Ocurrió en el viaje").
-- **Jira:** Guido pasa CAM-137, CAM-152, CAM-148 y CAM-140 a "Pendiente a Integrar".
+- **Antes de arrancar:**
+  - actualizar los repos locales y pararse en `develop`;
+  - correr `./gradlew build` y `npm run build` sobre `develop`, porque el CI no está corriendo y el código
+    integrado no pasó por los tests;
+  - reiniciar el backend de IntelliJ.
+- **Próximas cards de Guido** (Sprint 10 - Entrega 3):
+  - CAM-141: avisar al chofer que se resolvió su defecto;
+  - CAM-142: alerta de defectos abiertos sin atender;
+  - CAM-143: avisar el turno de taller al chofer;
+  - CAM-149: comentarios en la OT entre el admin y el técnico.
 - **Avisarle a Tomás:**
-  - su base necesita los `ALTER` de CAM-148 y CAM-152, o correr el seed;
-  - CAM-148 agrega `en_espera`, que cambia lo que cuenta su CAM-155;
-  - CAM-146 depende de CAM-144, que no está en el sprint.
-- **Limpiar los datos de prueba** de ZZ137, cuando Guido termine de probar.
+  - el bloqueo de facturación de GitHub Actions;
+  - su base necesita el `ALTER` de `inspections_type_check` (además de los de CAM-148 y CAM-152), o correr el seed.
+- **Limpiar los datos de prueba de ZZ137**, incluido el bloqueante abierto de CAM-139.
+- **Deuda nueva:**
+  - **el km del post-viaje no tiene tope:** con 10¹⁹ km, el aviso de CAM-152 dice "un viaje de
+    9.223.372.036.854.363.507 km". El km del vehículo no se mueve, porque lo descarta CAM-90;
+  - **en `DefectFields`, al terminar de subirse la foto se pisa lo que se escribió mientras subía.** Viene de antes
+    de CAM-139.
 - **Deuda chica:**
   - el texto del aviso de CAM-152 dice "el doble" y "la mitad", y solo es correcto con `ratio: 2`;
-  - el "hoy" de la fecha estimada y de los vencimientos usa la zona del servidor, que hay que tener en cuenta
-    para CAM-131.
+  - el "hoy" de la fecha estimada y de los vencimientos usa la zona del servidor, a tener en cuenta para CAM-131.
 - **Siguen de antes:**
   - Node 22 para los tests del frontend;
   - push con la app cerrada y al tocar la notificación;
@@ -97,21 +96,25 @@ conviene acordar con Tomás porque se cruza con CAM-146.
 
 ## Decisiones abiertas
 
-- **Nuevas, tomadas en esta sesión y pendientes de confirmar con Tomás:**
-  - el tope de 1.500 km/día de CAM-137;
-  - "Por km, sin estimación" muestra solo los planes por vencer;
-  - en CAM-152, los viajes marcados entran en el promedio;
-  - en CAM-148, el admin también pausa;
-  - en CAM-140, el promedio es de toda la flota y no por tipo de vehículo.
-- **Nueva:** si la reparación promedio de CAM-134 descuenta el tiempo en espera de CAM-148. Hoy no lo descuenta.
-- **Nueva:** si CAM-144 entra al sprint, porque sin ella CAM-146 no se puede hacer.
-- **Cambia:** el orden del sprint ya está resuelto (funcionalidad primero; seguridad y deploy quedaron afuera).
-  Sigue abierta la fecha de la entrega.
+- **Pendientes de confirmar con Tomás:**
+  - de CAM-139: el chofer elige un control del pre-viaje u "Otro problema", y "Otro" no cuenta para recurrentes;
+  - de CAM-137: el tope de 1.500 km/día, y que "Por km, sin estimación" muestre solo los planes por vencer;
+  - de CAM-152: que los viajes marcados entren en el promedio;
+  - de CAM-148: que el admin también pause;
+  - de CAM-140: que el promedio sea de toda la flota y no por tipo de vehículo.
+- **Nueva:** si el tiempo fuera de servicio (CAM-134) descuenta las horas en ruta después de un bloqueante reportado
+  en viaje. Va junto con la de siempre: si descuenta el tiempo en espera de CAM-148 (hoy no lo descuenta).
+- **Nueva:** no hay tag de las entregas 3 y 4: el último es `v1.2.0-entrega-2`.
+- **Resueltas:**
+  - CAM-144 entró, con el PR de Tomás;
+  - cómo conviven "Reportado en viaje" y "Ocurrió en el viaje";
+  - el orden del sprint;
+  - CAM-147 se descartó, así que ya no hay que decidir quién ve sus señales.
+- **Sigue abierta la fecha de la entrega.**
 - **Siguen de antes:**
   - Node 22 en esta máquina y en el CI del frontend;
-  - quién ve las señales sobre choferes de CAM-146 y CAM-147;
-  - el hosting de CAM-131, y `ddl-auto` contra una base que no se puede perder (que cada enum nuevo obliga a
-    borrar un CHECK a mano hace más urgentes las migraciones);
+  - el hosting de CAM-131, y `ddl-auto` contra una base que no se puede perder (cada enum nuevo obliga a borrar un
+    CHECK a mano: ya van cuatro);
   - si el técnico carga gastos;
   - protección de rama en `develop`;
   - usernames con acentos;
@@ -529,6 +532,20 @@ Lo que se probó y no funcionó, con el motivo. Se agrega, no se reemplaza.
 - **2026-11-06** — Repetición de los callejones del 2026-09-20 y el 2026-09-24: un `python - <<'EOF'` con texto
   Java largo se cortó con "unexpected EOF". Anduvo escribir el script con Write en la carpeta temporal y
   correrlo con `python -I`.
+- **2026-11-06** — Repetición del callejón de `users.role` (2026-09-16 y 2026-11-06): `inspections_type_check`
+  rechazó el tipo nuevo `ON_ROAD` y el reporte en viaje dio 500. Se borra el CHECK, y `seed-demo.sql` ya lo hace.
+- **2026-11-06** — `ContractEnumsTest` exige que cada enum vaya y vuelva entre Java y JSON. `InspectionType.ON_ROAD`
+  solo sale, porque `POST /inspections` no lo acepta, así que se lo prueba aparte en vez de con `assertContract`.
+- **2026-11-07** — El CI de #26 dio "Build, tests y coverage: failure" en 1 segundo. No eran los tests: la anotación
+  del job dice que la cuenta está bloqueada por facturación. Pasó igual en #25 y en `develop`. Ante un check que
+  falla en segundos, mirar `gh api repos/<repo>/check-runs/<id>/annotations` antes de buscar en el código.
+- **2026-11-07** — En el panel del navegador, navegar a otra ruta justo después de apretar "Ingresar" cortó el login.
+  Hay que esperar a que aparezca la vista nueva antes de navegar.
+- **2026-11-11** — El sprint 75 se llamaba "Sprint 9 - Entrega 4" y después se renombró a "Sprint 10 - Entrega 3".
+  No se inició hasta el 11/11, con la fecha de inicio el 07/11 a las 14:00. Las 9 cards de la Entrega 4 se cerraron
+  ese mismo día a la 01:54, así que Jira las marcó como terminadas fuera del sprint: no iban a contar en la
+  velocidad ni en el burndown. Se resolvió sacándolas al backlog, donde no se ven porque están finalizadas. Para la
+  próxima: iniciar el sprint antes de cerrar sus cards, y no usar el mismo sprint para dos entregas.
 
 ## Historial
 
@@ -777,3 +794,11 @@ Una línea por sesión.
   (aviso de km fuera de lo normal en un viaje), CAM-148 (pausar una OT con un motivo) y CAM-140 (comparar
   vehículos). Las cuatro pasaron por `revisor`, se probaron contra la base, se mergearon a la release y se
   pushearon.
+- **2026-11-06/07** — CAM-139 (reportar un defecto durante el viaje): inspección `ON_ROAD`, `source` en los defectos
+  y la pantalla del chofer, con el panel del defecto compartido con el checklist. Pasó por `revisor`, se probó contra
+  la base y entró a la release. Se abrieron los PRs de la Entrega 4 (#26 y fe#34), que Tomás integró a `develop`
+  esa misma noche, después de los suyos.
+- **2026-11-11** — Revisión de solo lectura de git, PRs y Jira para el cierre. La integración de Tomás conservó
+  CAM-139. El CI sigue sin correr por el bloqueo de facturación. Tomás hizo una limpieza del backlog con 8 cards
+  cerradas. Se inició el Sprint 10 y se sacaron de él las 9 cards de la Entrega 4, que se habían terminado antes del
+  inicio.
