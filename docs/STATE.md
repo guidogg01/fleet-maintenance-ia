@@ -1,6 +1,6 @@
 # Estado — FleetGuard
 
-Última actualización: **2026-11-12**
+Última actualización: **2026-11-16**
 Se escribe con el ritual de `docs/guias/sesiones.md`, siempre con confirmación
 de Guido.
 
@@ -8,100 +8,113 @@ de Guido.
 
 ## Dónde estamos
 
-Está en curso el "Sprint 10 - Entrega 3" (07/11 al 14/11). Ya entraron a `release/guido-sprint-10-entrega-3` dos de
-las cuatro cards de Guido, CAM-141 y CAM-142, en los dos repos y pusheadas. Faltan CAM-143 y CAM-149. `develop` está
-igual que el 06/11 y pasa los builds: 723 tests en el backend.
+La Entrega 3 está entregada: Tomás pasó `develop` a `main` el 15/11 y le puso el tag `v1.3.0-entrega-3` en los dos
+repos. Las cuatro cards de Guido del Sprint 10 (CAM-141, 142, 143 y 149) entraron a `develop` el 13/11. Las de Tomás
+(CAM-150, 156, 157 y 159) entraron entre el 13/11 y el 16/11. En Jira hay un sprint nuevo, "Sprint 10 - Entrega 4",
+todavía sin iniciar.
 
 ## En qué quedé
 
-- **CAM-141 (avisar al chofer que se resolvió su defecto), hecha:**
-  - **El aviso:** `defect_resolved`, al chofer que reportó el defecto, cuando se finaliza la OT de un defecto que
-    seguía abierto. Sale por `DefectResolvedEvent` y `DefectResolvedNotificationListener`.
-  - **Sin aviso doble:** si el defecto era bloqueante y el vehículo vuelve a estar disponible, no sale, porque ya llega
-    `vehicle_available`. Para saberlo, `VehicleAvailabilityService.sync` ahora devuelve si liberó el vehículo.
-  - **Cuándo no sale:**
-    - en una segunda OT de un defecto ya resuelto;
-    - si la OT se cancela;
-    - con un `driverId` viejo o un usuario que no existe.
-  - **El link es `/`:** tocar el aviso solo lo marca leído.
-  - **Contrato:** en `CAM-96-notifications-contract.md`.
-- **CAM-142 (alerta de defectos sin atender), hecha:**
-  - **La regla:** un defecto está sin atender si está abierto, lleva más de 7 días desde que se reportó, en días de
-    Argentina, y no tiene OT abierta ni turno programado. La regla está en `UnattendedDefects` y la usan el listado y
-    la tarea diaria.
-  - **El listado:** `GET /api/defects` suma `unattendedDays`.
-  - **El aviso:** `defect_unattended` sale de una tarea diaria (`UnattendedDefectAlertService`, a las 08:10).
-    - Va uno por vehículo, y junta los defectos del mismo nombre con la cantidad.
-    - Cada defecto se avisa una sola vez: queda anotado en la tabla nueva `unattended_defect_alerts`, que
-      `seed-demo.sql` ahora vacía.
+- **CAM-141 y CAM-142:** quedaron como estaban en el cierre del 12/11:
+  - **CAM-141:** `defect_resolved`, sin aviso doble con `vehicle_available`;
+  - **CAM-142:** `unattendedDays`, la tarea diaria `defect_unattended`, la marca, el filtro en la URL y el contador
+    del Resumen.
+  - CAM-159 no tocó sus archivos del backend. En el front cambió `App.css` y `dashboard.css`, pero las clases y el
+    filtro siguen.
+- **CAM-143 (avisar el turno de taller al chofer), hecha el 12/11 en otra sesión:**
+  - **Backend:**
+    - un aviso diario `scheduled_maintenance_upcoming` al chofer que tiene el vehículo en viaje, si el turno de taller
+      es hoy o mañana, una vez por turno y fecha;
+    - `trip_started_with_maintenance` al admin si el vehículo sale de viaje con turno ese día;
+    - `scheduledToday` en `GET /api/vehicles`.
+  - **Frontend:** la marca "Turno de taller hoy" en la lista del chofer, y "¿Salís igual?" antes del pre-viaje, tanto
+    por la lista como por el QR.
+- **CAM-149 (comentarios en la OT), hecha el 13/11 en otra sesión:**
+  - **Backend:**
+    - `GET` y `POST /api/work-orders/{id}/comments`, con JWT. Otro técnico recibe 403 y una OT cerrada da 409;
+    - el aviso `work_order_comment`: del técnico a los configurados y del admin al técnico, nunca al autor.
   - **Frontend:**
-    - en Defectos, la marca "Sin atender hace N días" y un tercer filtro;
-    - los filtros pasaron a la URL (`/defectos?filtro=sin-atender|en-viaje`), y los botones ahora ocupan el ancho de
-      su texto;
-    - en el Resumen, el contador "N sin atender →" debajo del título de "Defectos abiertos recientes".
-  - **Contrato:** `CAM-142-unattended-defects-contract.md`.
-- **Verificación:**
-  - **`revisor`:** pasaron las dos. CAM-142 tuvo un bloqueante: la marca no se iba al planificar sin recargar. Ya está
-    corregido.
-  - **Tests:** el backend tiene 752 en verde, con el piso de cobertura. El frontend pasa lint y build; `vitest` sigue
-    sin correr con Node 20.
-  - **Contra la base**, con un backend en 8081 y Vite en 5174:
-    - CAM-141 dio los tres casos bien;
-    - CAM-142 marcó 6 defectos en 3 vehículos, mandó 3 avisos y no los repitió.
-    - Guido también probó las dos en su 5173.
-- **Jira:** Guido movió CAM-141. CAM-142 todavía no se movió.
-- **Datos de prueba que quedaron:**
-  - **ZZ137AA:** quedaron resueltos "frenos" y "goma baja", y el vehículo volvió a estar disponible. "giro" sigue
-    abierto, porque su OT se canceló.
-  - **Avisos:** carlos.gomez tiene 2 de la prueba de CAM-141, y el admin los 3 de CAM-142.
-  - **Defectos avisados:** los 6 que dieron sin atender ya están en `unattended_defect_alerts`.
-- **Repos:** los dos quedaron en `release/guido-sprint-10-entrega-3`, al día con el remoto. En el backend sigue
-  `.idea/misc.xml` sin commitear.
+    - la sección Comentarios en el detalle de la OT del admin y en la pantalla del técnico, con dictado. En
+      computadora, Enter envía y Ctrl+Enter es salto de línea;
+    - la campanita del técnico abre la OT del aviso si sigue siendo suya.
+- **Integración:**
+  - Guido mergeó la release (#27 y fe#35) el 13/11, después de los PRs de Tomás (#28 y fe#36). Tomás había mergeado
+    `develop` en la release para resolver los conflictos.
+  - **CAM-159 de Tomás (#29 y fe#37), el 16/11:**
+    - "Cubiertas" pasa a "Neumáticos", y `/vehiculos/cubiertas` redirige a `/vehiculos/neumaticos`;
+    - se puede quitar una plantilla de checklist de los vehículos;
+    - checklist del remolque en el pre-viaje;
+    - post-viaje configurable por vehículo y en plantillas;
+    - paleta v2 del front.
+- **CI:** el del backend volvió a correr en verde desde el 13/11, en `develop`, `main` y el PR de CAM-159, así que el
+  bloqueo de facturación se resolvió. El frontend no tiene CI.
+- **Jira:**
+  - "Sprint 10 - Entrega 3" se cerró el 14/11, con sus 8 cards finalizadas dentro del sprint.
+  - **El sprint 76, "Sprint 10 - Entrega 4", está sin iniciar** y ya tiene 4 cards "En curso":
+    - CAM-160, de Guido: "Cubiertas" a "Neumáticos";
+    - CAM-161, de Tomás: sección para remolques;
+    - CAM-162, de Tomás: quitar un vehículo de una plantilla. No tiene descripción;
+    - CAM-163, de Guido: "Cambiar UI".
+- **Revisión del 16/11, de solo lectura:** se cruzaron git, los PRs, el CI y Jira. No se tocó código.
+- **Datos de prueba:** siguen los del 12/11: "giro" en ZZ137AA, los avisos de prueba y los 6 defectos ya anotados como
+  avisados.
+- **Repos:**
+  - en local los dos están en `develop`: 2 commits atrás en el backend y 1 en el frontend, por CAM-159;
+  - en el backend sigue `.idea/misc.xml` sin commitear.
 
 ## Qué sigue
 
-- **Cerrar lo de CAM-142:** pasarla en Jira, y sacar de `application-local.yml` el `cron` y el `days: 3` si quedaron
-  de la prueba.
-- **Próximas cards de Guido:**
-  - CAM-143: avisar el turno de taller al chofer;
-  - CAM-149: comentarios en la OT entre el admin y el técnico.
+- **Antes de arrancar:**
+  - actualizar `develop` en los dos repos, con `npm install` por si CAM-159 sumó dependencias;
+  - correr `./gradlew build` y `npm run build`;
+  - reiniciar el backend de IntelliJ.
+- **Aclarar con Tomás el sprint nuevo antes de tocarlo:**
+  - CAM-160 y CAM-162 ya parecen hechas por CAM-159: en `develop` ya dice "Neumáticos" y ya existe quitar una
+    plantilla;
+  - CAM-161 y CAM-163 pueden estar cubiertas en parte, por el checklist del remolque y la paleta v2;
+  - **el inicio del sprint:** iniciarlo antes de cerrar cualquier card, para que no se repita lo del 11/11. Y revisar
+    el nombre, que vuelve a decir "Sprint 10".
 - **Avisarle a Tomás:**
-  - el bloqueo de facturación de GitHub Actions;
-  - su base necesita borrar `inspections_type_check`, `notifications_type_check` y `notification_settings_type_check`,
-    o correr el seed. Si no, el aviso de CAM-142 da 500 al guardar su configuración.
+  - su base necesita borrar los CHECK de enums, o correr el seed. Ya son `inspections_type_check`,
+    `notifications_type_check` y `notification_settings_type_check`;
+  - los tipos de aviso nuevos de CAM-142, 143, 149, 156 y 157 chocan con esos CHECK.
 - **Limpiar los datos de prueba:** "giro" en ZZ137AA y los de antes.
-- **Deuda nueva:** un turno programado cuenta como atención en CAM-142 aunque su fecha ya haya pasado sin hacerse. En la
-  base pasa con el del ABS (AD556HX), del 16/10.
-- **Deuda de antes:**
-  - el km del post-viaje no tiene tope;
-  - la foto de `DefectFields` pisa el texto;
-  - el texto de CAM-152 con `ratio` 2;
-  - el "hoy" con la zona del servidor;
-  - Node 22;
-  - la push con la app cerrada;
-  - CAM-109 y CAM-130;
-  - `hour12`;
-  - `LocalDate.now()`;
-  - los bugs de `revisor`;
-  - turnos, `@Version`, el foco de los modales y la cámara en Android.
+- **Deuda:**
+  - un turno vencido sin hacer cuenta como atención en CAM-142, como el del ABS (AD556HX) del 16/10;
+  - y la de antes:
+    - el km del post-viaje sin tope;
+    - la foto de `DefectFields`;
+    - el texto de CAM-152;
+    - el "hoy" con la zona del servidor;
+    - Node 22;
+    - la push con la app cerrada;
+    - CAM-109 y CAM-130;
+    - `hour12`;
+    - `LocalDate.now()`;
+    - los bugs de `revisor`;
+    - turnos, `@Version`, los modales y la cámara en Android.
 
 ## Decisiones abiertas
 
+- **Nueva:** qué hacer con CAM-160, 161, 162 y 163 si CAM-159 ya las cubre (cerrarlas, redefinirlas o reemplazarlas),
+  y el nombre y el inicio del sprint 76.
 - **Pendientes de confirmar con Tomás:**
-  - **de CAM-141:** si se apaga "Vehículo disponible" y queda prendido "Defecto resuelto", al resolverse el único
-    bloqueante el chofer no recibe ninguno de los dos;
+  - **de CAM-141:** si se apaga "Vehículo disponible" y queda prendido "Defecto resuelto", el chofer no recibe ninguno
+    de los dos;
   - **de CAM-142:**
     - una OT en espera cuenta como atención;
-    - bloqueantes y no bloqueantes tienen el mismo plazo de 7 días;
-    - se avisa una sola vez, sin volver a avisar;
-    - un turno vencido sin hacer cuenta como atención;
+    - bloqueantes y no bloqueantes tienen el mismo plazo;
+    - se avisa una sola vez;
+    - un turno vencido cuenta como atención;
   - **las de antes:** CAM-139, CAM-137, CAM-152, CAM-148 y CAM-140.
+- **Resueltas:**
+  - **el tag de las entregas:** `v1.3.0-entrega-3`. La 4 todavía no tiene;
+  - **el CI bloqueado por facturación:** ya corre.
 - **Siguen de antes:**
-  - el tiempo fuera de servicio de CAM-134 contra las pausas y el viaje;
-  - no hay tag de las entregas 3 y 4;
+  - CAM-134 contra las pausas y el viaje;
   - la fecha de la entrega;
-  - Node 22 en el CI;
-  - el hosting y `ddl-auto`, que ya va por cinco CHECK borrados a mano;
+  - Node 22 en el CI, y que el frontend no tiene CI;
+  - el hosting y `ddl-auto`;
   - los gastos del técnico;
   - la protección de rama;
   - los acentos en los usernames;
@@ -538,6 +551,10 @@ Lo que se probó y no funcionó, con el motivo. Se agrega, no se reemplaza.
   (`'--fleetguard...cron=*/30 * * * * *'`): si no, Gradle lo parte en varios argumentos.
 - **2026-11-12** — Repetición del callejón del 2026-10-03: la pestaña de 5173 de Guido no mostraba el filtro nuevo de
   Defectos hasta hacer Ctrl+Shift+R.
+- **2026-11-16** — `STATE.md` quedó desactualizado en tres días: CAM-143 y CAM-149 se hicieron en otra sesión sin
+  `/cierre`, y Tomás tagueó la entrega y abrió un sprint nuevo. Se reconstruyó como el 2026-09-11: `git fetch`,
+  `gh pr list` y `gh run list` en los dos repos, y JQL `project = CAM AND updated >= <fecha>`. Si una sesión hace
+  cards, conviene cerrarla con `/cierre` aunque sea corta.
 
 ## Historial
 
@@ -798,3 +815,9 @@ Una línea por sesión.
   `release/guido-sprint-10-entrega-3` y se hicieron CAM-141 (aviso al chofer de que se resolvió su defecto) y CAM-142
   (defectos sin atender: marca, filtro, contador y aviso diario). Las dos pasaron por `revisor`, se probaron contra la
   base y entraron a la release, pusheada.
+- **2026-11-12/13** (otra sesión, sin `/cierre`) — CAM-143 (aviso del turno de taller al chofer y "¿Salís igual?"
+  antes del pre-viaje) y CAM-149 (comentarios en la OT entre el admin y el técnico). Entraron a la release, y la
+  release se mergeó a `develop` (#27 y fe#35).
+- **2026-11-16** — Revisión de solo lectura de git, PRs, CI y Jira. La Entrega 3 está en `main` con
+  `v1.3.0-entrega-3`, el CI volvió a andar y Tomás integró CAM-150, 156, 157 y 159. El sprint nuevo de Jira tiene
+  cards que CAM-159 parece cubrir ya.
