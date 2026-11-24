@@ -1,6 +1,6 @@
 # Estado — FleetGuard
 
-Última actualización: **2026-11-23**
+Última actualización: **2026-11-24**
 Se escribe con el ritual de `docs/guias/sesiones.md`, siempre con confirmación
 de Guido.
 
@@ -8,73 +8,55 @@ de Guido.
 
 ## Dónde estamos
 
-La Entrega 3 está entregada (`v1.3.0-entrega-3`) y el proyecto pasó a enfocarse en el **video de demo de unos 5
-minutos** para la presentación. La voz ya está grabada y queda como toma final. El guion, el seed y el ensayo en la
-app están listos. Falta grabar las pantallas, el logo provisorio, la música y la edición en CapCut.
+El video de demo está **grabado completo**: la voz (toma final, 4:51) y todas las tomas de pantalla de las escenas 2 a
+13. Lo que falta es la **edición en CapCut**, más el logo provisorio, el diagrama del ciclo, los carteles de rol y la
+música. La edición se hace en una sesión nueva.
 
 ## En qué quedé
 
-- **Guion:** `docs/video/GUION.md` (v0.4), con 15 escenas en una sola historia:
-  - Carlos reporta una pérdida de aceite bloqueante en el Volvo AF638RB;
-  - el admin la planifica y se la asigna a Javier;
-  - Javier la resuelve y Carlos vuelve a salir;
-  - al final, un repaso rápido del resto de la app.
+- **Tomas de pantalla (23 y 24/11):** 10 archivos en `C:\Users\Equipo\Videos\Grabaciones de pantalla\`. Claude los
+  revisó cuadro a cuadro:
+  - chofer (escenas 2 a 5);
+  - admin (6 a 8), más dos clips cortos: la pestaña Notificaciones y la foto del defecto;
+  - técnico (9 a 11);
+  - chofer (12), en dos partes;
+  - montaje del admin (13), más dos clips: comparar vehículos y exportar a PDF.
 
-  El archivo también tiene el cronometraje de los dos borradores de voz, la transcripción del borrador 2 y el ensayo
-  escena por escena. Las reglas del guion:
-  - tono neutro, de "ustedes";
-  - sin subtítulos, solo palabras clave en pantalla;
-  - palabras como "dashboard" y "modal" van, porque el público son en buena parte programadores.
-- **Guía de grabación:** `docs/video/GRABACION.md`, con la preparación del día de grabación, la captura, la locución,
-  la edición en CapCut y el análisis del video de miTVU, que tiene casi un minuto sin app, un cambio de imagen cada
-  2,6 s y la música cargada en los graves.
-- **Voz:** el borrador 2 (micrófono bueno, 4:51) queda como **toma final, sin regrabar nada**. Lo medido:
-  - ritmo de 2,0 palabras por segundo, prácticamente el de la referencia;
-  - tono y volumen parejos de punta a punta;
-  - ruido de fondo en -62 dB.
+  Se descartó la primera toma de la foto, porque el cursor quedaba encima.
+- **`docs/video/MONTAJE.md` (nuevo):** qué archivo va en cada escena, con un nombre corto para cada uno, la voz por
+  escena, cada tramo a usar con su zoom o palabra clave, lo que no se usa y los cortes exactos:
+  - el clic derecho, en 1:51,7 de la toma del chofer;
+  - la burbuja de descarga, de 1:47,2 a 1:52,0 de la escena 13;
+  - comparar hasta 0:08,3;
+  - el PDF hasta 0:14,7, antes de la ventana "Guardar como" de Windows.
 
-  Con el logo, los carteles y las pausas con música, el video da unos 5:05 a 5:10.
-- **Seed del video:** `docs/db/seed-video.sql`, en la rama `feature/video-demo` del backend (`a3a0757`, pusheada, sin
-  PR). Se corre después de `seed-demo.sql` y deja:
-  - a Carlos sin viaje abierto;
-  - a Javier sin órdenes abiertas;
-  - las campanitas limpias.
-
-  Después del ensayo le sumé dos pasos, **todavía sin probar**:
-  - borra los avisos viejos del admin;
-  - marca como ya avisados los vencimientos de mantenimiento, para que el aviso del defecto salga primero.
-- **Ensayo (23/11):** la historia completa funciona. Lo que hay que saber para grabar quedó en `GUION.md`, sección
-  "Ensayo":
-  - en la escena 9, tocar el aviso no abre la orden, y así está hecho;
-  - en la escena 11, el cierre no pide km y dice "mantenimiento": queda así, decidido con Guido;
-  - en la escena 8, la fecha tiene que quedar en el futuro.
-
-  La base local quedó con los datos del ensayo.
-- **CapCut:**
-  - no hay conector, pero la versión 9.4 guarda los proyectos como JSON legible;
-  - Computer use ya está disponible desde el 18/11, todavía sin usar con CapCut.
+  El tiempo fuera de servicio de la escena 13 sale de la toma del admin (0:29 a 0:35). `GRABACION.md` lo enlaza.
+- **Resolución:** las tomas del celular tienen unos 375 píxeles de ancho. Se simuló el resultado en 1920×1080 y se ve
+  bien hasta un zoom de 2×. Las de la computadora están a resolución completa.
+- **`seed-video.sql`:** los dos pasos nuevos quedaron **probados en la grabación real**. La campanita del admin mostró
+  solo el aviso del defecto.
+- **Base local:** quedó con los datos de la grabación (defecto resuelto, OT finalizada, Volvo en viaje). Para volver
+  a grabar algo hay que correr los dos seeds.
 - **Repos:**
-  - `TIP - IA`: commit `8d10627` en `master`, pusheado;
-  - backend parado en `feature/video-demo` (el código es igual al de `develop`), con `.idea/misc.xml` sin
-    commitear;
-  - frontend en `develop`, al día.
+  - `TIP - IA`: `MONTAJE.md` y el enlace en `GRABACION.md` commiteados;
+  - backend parado en `feature/video-demo`, con `.idea/misc.xml` sin commitear;
+  - frontend en `develop`.
 
 ## Qué sigue
 
-- **El día de grabar, después de las 8:15:**
-  - con el backend apagado, correr `seed-demo.sql` y después `seed-video.sql`, con `psql` por ruta completa y
-    `$env:PGCLIENTENCODING = "UTF8"`. El resultado tiene que decir "listo para grabar";
-  - permitir las notificaciones de `localhost:5173` en Chrome y poner Windows en "No molestar";
-  - grabar las pantallas siguiendo la voz del borrador 2, escena por escena.
-- **Logo provisorio** para la apertura y el cierre, en SVG con los colores de la app.
-- **Música:** instrumental, sin voces y con graves, de la biblioteca de CapCut.
-- **Edición en CapCut:** probar Computer use y la escritura del JSON en un proyecto de prueba antes de tocar el del
-  video.
+- **En la sesión de edición, abierta en `TIP - IA` con `/retomar`:**
+  - copiar las tomas a una carpeta con los nombres cortos de `MONTAJE.md`;
+  - hacer el logo provisorio (escenas 0 y 14), el diagrama del ciclo (escena 1) y los carteles CHOFER,
+    ADMINISTRADOR y TÉCNICO, en SVG con los colores de la app;
+  - elegir la música: instrumental, sin voces y con graves;
+  - armar todo en CapCut sobre la voz, siguiendo `MONTAJE.md`. Probar Computer use, o la escritura del JSON del
+    proyecto, en un proyecto de prueba antes que en el del video.
 - **Siguen de antes:**
   - aclarar con Tomás el sprint 76 y las cards CAM-160 a 163. CAM-163 está desactualizada y la UI no va a cambiar;
   - avisarle a Tomás lo de los CHECK de enums: su base necesita borrarlos o correr el seed
     (`inspections_type_check`, `notifications_type_check` y `notification_settings_type_check`);
   - la deuda:
+    - la marca "FleetMaintenance" / "Fleet Maintenance" en el cartel de la push y en el título de la pestaña;
     - un turno vencido sin hacer cuenta como atención en CAM-142, como el del ABS (AD556HX) del 16/10;
     - el km del post-viaje sin tope;
     - la foto de `DefectFields`;
@@ -90,18 +72,16 @@ app están listos. Falta grabar las pantallas, el logo provisorio, la música y 
 
 ## Decisiones abiertas
 
-- **Nuevas:**
-  - el logo definitivo, a charlar con Tomás;
-  - si `seed-video.sql` entra a `develop` con un PR o queda en su rama.
-- **Resueltas en esta sesión:**
-  - grabar sobre `develop`, con la UI actual;
-  - tono neutro, sin subtítulos y sin publicar en YouTube;
-  - música libre de derechos;
-  - el QR no se escanea en cámara, se muestra en el detalle del vehículo;
-  - los nombres del seed (Carlos y Javier);
-  - "dashboard" y "modal" se quedan;
-  - la escena 11 queda como está.
+- **Nuevas:** ninguna.
+- **Resueltas en esta sesión** (quedan anotadas en `MONTAJE.md`):
+  - el título "Perdida de Aceite", sin tilde y con mayúscula;
+  - el "Hace 1 día" en el aviso del técnico;
+  - el comentario del filtro de aire;
+  - las dos órdenes en "Mis órdenes" del técnico;
+  - los zooms solo hasta 2× en las tomas del celular.
 - **Siguen de antes:**
+  - el logo definitivo, a charlar con Tomás;
+  - si `seed-video.sql` entra a `develop` con un PR o queda en su rama;
   - qué hacer con CAM-160, 161, 162 y 163 si CAM-159 ya las cubre, y el nombre y el inicio del sprint 76;
   - **pendientes de confirmar con Tomás:**
     - **de CAM-141:** si se apaga "Vehículo disponible" y queda prendido "Defecto resuelto", el chofer no recibe
@@ -575,6 +555,19 @@ Lo que se probó y no funcionó, con el motivo. Se agrega, no se reemplaza.
   `seed-video.sql`.
 - **2026-11-23** — Planificar con una hora que ya pasó da "Datos inválidos para programar el mantenimiento", un
   mensaje poco claro.
+- **2026-11-24** — Al grabar pasada la medianoche, los avisos creados el día anterior dicen "Hace 1 día". No es un error:
+  la app calcula la fecha relativa. Conviene grabar cada rol de corrido el mismo día.
+- **2026-11-24** — Confirmar una descarga mientras se graba mete en la toma la burbuja de descargas de Chrome, y el PDF
+  abre la ventana "Guardar como" de Windows. Para grabar una exportación, mostrar el botón y el cuadro, y no confirmar
+  la descarga.
+- **2026-11-24** — En "Comparar vehículos", ordenar por disponibilidad sube arriba los remolques, con "$ 0" y "Sin
+  datos". Para mostrar la comparación conviene dejarla ordenada por costo por km.
+- **2026-11-24** — La campanita muestra "Recibí estos avisos aunque FleetMaintenance esté cerrado — Activar en este
+  dispositivo" cuando la push no está activada. Dice "FleetMaintenance" en lugar de FleetGuard, igual que el título de
+  la pestaña ("Fleet Maintenance"). En el video se evita con el encuadre. En la app queda como deuda de marca.
+- **2026-11-24** — Para mostrarle a Guido un cuadro de una toma, el navegador de la sesión no puede guardar archivos.
+  Anduvo un servidor de Python propio en la carpeta temporal, que recibe un `POST /guardar/<nombre>` con el PNG del
+  `canvas`. Esos PNG después se leen con Read o se mandan con SendUserFile.
 
 ## Historial
 
@@ -845,3 +838,7 @@ Una línea por sesión.
   grabación; análisis del video de miTVU (audio y cuadros) y medición de dos borradores de voz (el 2, de 4:51, queda
   como toma final); `seed-video.sql` en `feature/video-demo` y ensayo completo en la app. Commits `8d10627` (IA) y
   `a3a0757` (backend), pusheados.
+- **2026-11-23/24** — Grabación del video: todas las tomas de pantalla de las escenas 2 a 13, revisadas cuadro a cuadro
+  por Claude (cortes, clics de más, la burbuja de descarga y la resolución simulada en 1080p); se regrabaron la foto
+  del admin y la segunda mitad de la escena 12, y se sumaron los clips de comparar y exportar a PDF;
+  `docs/video/MONTAJE.md` con los archivos y los cortes por escena.
