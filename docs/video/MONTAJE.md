@@ -16,6 +16,7 @@ La voz está en `C:\Users\Equipo\Downloads\`. Las tomas de pantalla están en
 | Nombre corto | Archivo original | Dura | Tamaño | Escenas |
 |---|---|---|---|---|
 | `voz.mp4` | `Borrador de FleetGuard #2.mp4` (Downloads) | 4:51 | solo audio | todas |
+| `musica.wav` | `musica-corporate-leberch-5m10.wav` (Downloads) | 5:10 | solo audio | todas |
 | `chofer-2a5.mp4` | `2026-11-23 232458` | 2:00 | 376×822 | 2, 3, 4, 5 |
 | `admin-6a8.mp4` | `2026-11-23 235029` | 1:28 | 1920×906 | 6, 7, 8 (y 13) |
 | `admin-notificaciones.mp4` | `2026-11-23 235514` | 0:20 | 1920×906 | 6 |
@@ -94,6 +95,28 @@ fondo del proyecto en `#F3F4F0` para que esas franjas sean del color de la app.
 
 El logo es **provisorio**: usa el camión del favicon de la app, con un tilde verde. El definitivo queda para charlarlo
 con Tomás.
+
+## La música
+
+**"Corporate", de leberch**, de Pixabay Music
+([página del tema](https://pixabay.com/music/corporate-corporate-509707/)). Es gratis, con la Pixabay Content License,
+y no pide atribución. Tiene Content ID de YouTube: para la presentación no importa, pero si algún día se sube el video
+a YouTube puede aparecer un reclamo. Guido la eligió escuchando 7 candidatas que Claude había filtrado entre 38 temas
+de Pixabay: las que tenían graves fuertes respecto de la banda de la voz y volumen parejo.
+
+- **Archivos:** el original es `leberch-corporate-509707.mp3` (3:28, en Downloads). La versión para el video es
+  `musica-corporate-leberch-5m10.wav` (5:10, también en Downloads), y es la que va en CapCut.
+- **Cómo se estiró:** el tema va a 113 BPM y repite casi igual (0,97 sobre 1) el tramo de 1:07 a 1:24 entre 2:49 y
+  3:06, a 101,947 s de distancia. La versión de 5:10 toca el original hasta 2:55,538 y sigue desde 1:13,591 hasta el
+  final, con un fundido de 20 ms. Se cortó en la muestra exacta, cosa que CapCut no puede hacer porque corta por
+  cuadros. Claude verificó que el empalme no deja un salto ni corre el ritmo.
+- **Dónde va:** arranca en 0:00 con el logo y termina con el golpe final del tema (de 5:05 a 5:08), sobre el logo del
+  cierre. Si el video sale más corto que 5:10, se alinea el final de la música con el final del video y se recorta el
+  principio. El tema arranca a pleno volumen, así que el recorte no se nota.
+- **Volumen:** la música viene unos 6 dB más fuerte que la voz. Empezar con la música en **−14 dB**: queda unos 8 dB
+  por debajo de la voz y 13 dB por debajo en la banda de la voz. Para que se escuche más, como en miTVU, hasta −11 dB.
+  Para que quede más de fondo, hasta −18 dB. Si se normalizan las dos pistas en CapCut, la música va unos 8 dB por
+  debajo de la voz. El volumen queda fijo todo el video: en las pausas sin voz no se sube.
 
 ## Escenas 0 y 1 — apertura y ciclo
 
@@ -202,7 +225,8 @@ Sin tomas de pantalla: `cierre.png` (ver Gráficos).
 
 ## Lo que falta antes de editar
 
-- **Música:** instrumental, sin voces y con graves, unos 12 a 15 dB por debajo de la voz.
+Nada: están las tomas, la voz, los gráficos y la música. Lo que sigue es copiar las tomas con los nombres cortos y
+armar el proyecto en CapCut.
 
 ## Notas para la edición
 
