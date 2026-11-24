@@ -11,7 +11,10 @@ a cuadro.
 
 La voz está en `C:\Users\Equipo\Downloads\`. Las tomas de pantalla están en
 `C:\Users\Equipo\Videos\Grabaciones de pantalla\`, con el nombre que les pone Windows: "Grabación de pantalla
-<fecha> <hora>.mp4". Conviene copiarlas a una carpeta del proyecto con el nombre corto de la primera columna.
+<fecha> <hora>.mp4". **Todo está copiado, con el nombre corto de la primera columna, en
+`C:\Users\Equipo\Videos\Video FleetGuard\`**: la voz, la música y las 10 tomas, 12 archivos en total (unos 200 MB).
+Las copias se compararon byte a byte con los originales, que quedan donde estaban. El proyecto de CapCut toma los
+archivos de esa carpeta.
 
 | Nombre corto | Archivo original | Dura | Tamaño | Escenas |
 |---|---|---|---|---|
@@ -225,8 +228,8 @@ Sin tomas de pantalla: `cierre.png` (ver Gráficos).
 
 ## Lo que falta antes de editar
 
-Nada: están las tomas, la voz, los gráficos y la música. Lo que sigue es copiar las tomas con los nombres cortos y
-armar el proyecto en CapCut.
+Nada: están las tomas, la voz, los gráficos y la música. Las tomas ya están copiadas con los nombres cortos. Lo que
+sigue es armar el proyecto en CapCut.
 
 ## Notas para la edición
 
