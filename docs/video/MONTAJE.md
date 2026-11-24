@@ -54,9 +54,50 @@ La voz está en `C:\Users\Equipo\Downloads\`. Las tomas de pantalla están en
 Entre escenas de distinto rol van 2 o 3 segundos de música sola, con el cartel del rol: antes de la 2, de la 6, de la
 9 y de la 12. Hay que abrir ese hueco en la pista de voz.
 
+## Gráficos
+
+Están en [`graficos/png/`](graficos/png/), todos en PNG de 1920×1080 con los colores y las tipografías de la app. Los
+genera [`graficos/generar.py`](graficos/generar.py), que guarda también los SVG en `graficos/svg/`. Para cambiar un
+texto, se edita el script y se corre `py generar.py` desde esa carpeta, en unos 10 segundos.
+
+| Archivo | Escena | Uso |
+|---|---|---|
+| `logo.png` | 0 | El logo completo sobre el fondo de la app |
+| `logo-capa-camion.png` y `logo-capa-texto.png` | 0 | Las dos partes del logo, con fondo transparente y ya ubicadas. Se apilan sobre un fondo `#F3F4F0` y se animan por separado: primero el camión y después el nombre |
+| `ciclo-0-base.png` | 1 | Los tres roles, ninguno resaltado. Abre la escena |
+| `ciclo-1-chofer`, `ciclo-2-admin` y `ciclo-3-tecnico` | 1 | Fundido a cada uno cuando la voz nombra ese rol |
+| `ciclo-4-completo.png` | 1 | Todo resaltado, con "…de punta a punta" |
+| `cartel-1-chofer.png` | antes de la 2 | Cartel CHOFER |
+| `cartel-2-admin.png` | antes de la 6 | Cartel ADMINISTRADOR |
+| `cartel-3-tecnico.png` | antes de la 9 | Cartel TÉCNICO |
+| `cartel-4-vuelta.png` | antes de la 12 | CHOFER otra vez, con la flecha del técnico al chofer en verde |
+| `cartel-5-ademas.png` | antes de la 13 | "Y además…" |
+| `cierre.png` | 14 | Logo, "Muchas gracias", los nombres del equipo y "Trabajo de Inserción Profesional · 2026" |
+| `celular.png` | 2 a 5, 9 a 12 | El fondo de la app con el dibujo del celular y la pantalla transparente. Va **arriba** de la toma |
+| `etiqueta-chofer`, `etiqueta-admin` y `etiqueta-tecnico` | cada rol | La etiqueta fija, arriba a la izquierda, durante todas las escenas de ese rol |
+| `clave-1-defecto-bloqueante` | 4 | Palabra clave en rojo, a la derecha del celular |
+| `clave-2-vehiculo-bloqueado` | 5 | También en rojo, a la derecha del celular |
+| `clave-3-orden-asignada` | 8 | En azul. Queda a la derecha, sobre la pantalla del admin |
+| `clave-4-defecto-resuelto` | 11 | En verde |
+
+Todos ocupan el cuadro entero (1920×1080) con fondo transparente y ya están ubicados: se ponen en su pista sin mover
+ni escalar. Así CapCut no los agranda solos, como hace con una imagen chica.
+
+**Cómo va el celular:** la toma abajo, escalada al **88 %** y centrada, y `celular.png` arriba. Con 88 % la toma
+llena el hueco de la pantalla y lo que sobra queda tapado por el borde. Sirve para las tres tomas del celular, que
+tienen casi la misma proporción. Un zoom sobre la toma queda adentro de la pantalla. Para acercarse con el celular
+entero, hay que agrupar las dos pistas y hacer el zoom sobre el grupo. Se probó con cuadros reales de
+`chofer-2a5` y `admin-13`.
+
+**Las tomas del admin** (1920×906) entran a lo ancho y dejan unas franjas de 87 px arriba y abajo. Conviene poner el
+fondo del proyecto en `#F3F4F0` para que esas franjas sean del color de la app.
+
+El logo es **provisorio**: usa el camión del favicon de la app, con un tilde verde. El definitivo queda para charlarlo
+con Tomás.
+
 ## Escenas 0 y 1 — apertura y ciclo
 
-No hay tomas de pantalla: son el logo animado y el diagrama de los tres roles, **todavía por hacer**.
+No hay tomas de pantalla: son el logo y el ciclo de los tres roles (ver Gráficos).
 
 ## Escenas 2 a 5 — chofer: `chofer-2a5.mp4`
 
@@ -157,12 +198,10 @@ Qué **no** usar de los clips:
 
 ## Escena 14 — cierre
 
-Sin tomas de pantalla: el logo con "Muchas gracias".
+Sin tomas de pantalla: `cierre.png` (ver Gráficos).
 
 ## Lo que falta antes de editar
 
-- **Logo provisorio** (escenas 0 y 14), en SVG con los colores de la app.
-- **Diagrama del ciclo** (escena 1) y los **carteles de rol**: CHOFER, ADMINISTRADOR, TÉCNICO y la vuelta al chofer.
 - **Música:** instrumental, sin voces y con graves, unos 12 a 15 dB por debajo de la voz.
 
 ## Notas para la edición

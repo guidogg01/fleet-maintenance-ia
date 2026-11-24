@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080"><style>@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&amp;family=Inter:wght@400;500;600&amp;display=block');.d{font-family:'Space Grotesk',sans-serif}.b{font-family:'Inter',sans-serif}</style><rect width="1920" height="1080" fill="#F3F4F0"/><g transform="translate(795.0 230.0) scale(1.3750)">
+<ellipse cx="122" cy="204" rx="104" ry="7" fill="#0B2E28" opacity="0.14"/>
+<path d="M16 90 L146 52 L146 108 L16 146 Z" fill="#0B2E28"/>
+<path d="M146 52 L168 60 L168 116 L146 108 Z" fill="#0B2E28"/>
+<path d="M16 90 L146 52 L168 60 L38 98 Z" fill="#0B2E28"/>
+<path d="M30 106 L134 74" stroke="#F3F4F0" stroke-width="4" stroke-linecap="round" opacity="0.9"/>
+<path d="M164 58 C164 51 169 46 176 45 L196 42 C207 40 216 48 216 60 L216 156 L164 168 Z" fill="#0B2E28"/>
+<path d="M170 46 L214 40 L216 52 L168 58 Z" fill="#0B2E28"/>
+<path d="M174 60 L206 55 L206 78 L174 84 Z" fill="#F3F4F0"/>
+<path d="M178 92 L178 150" stroke="#F3F4F0" stroke-width="3" stroke-linecap="round" opacity="0.5"/>
+<rect x="212" y="58" width="8" height="20" rx="3" fill="#0B2E28"/>
+<rect x="184" y="96" width="28" height="6" rx="2" fill="#F3F4F0"/>
+<rect x="184" y="108" width="28" height="6" rx="2" fill="#F3F4F0"/>
+<rect x="184" y="120" width="28" height="6" rx="2" fill="#F3F4F0"/>
+<rect x="164" y="152" width="58" height="10" rx="3" fill="#0B2E28"/>
+<circle cx="60" cy="160" r="20" fill="#0B2E28"/>
+<circle cx="60" cy="160" r="8" fill="#F3F4F0"/>
+<circle cx="192" cy="176" r="22" fill="#0B2E28"/>
+<circle cx="192" cy="176" r="9" fill="#F3F4F0"/>
+
+<circle cx="58" cy="52" r="34" fill="#F3F4F0"/>
+<circle cx="58" cy="52" r="28" fill="#27804F"/>
+<path d="M45 52 L54 61 L71 43" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round"
+ stroke-linejoin="round"/>
+</g><text x="960.0" y="690" class="d" font-size="150" font-weight="700" text-anchor="middle" letter-spacing="-2"><tspan fill="#1F2A24">Fleet</tspan><tspan fill="#15616D">Guard</tspan></text><text x="960.0" y="770.0" class="b" font-size="38" font-weight="500" fill="#56615B" text-anchor="middle" >Mantenimiento preventivo e inspecciones de flota</text></svg>

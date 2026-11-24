@@ -5,8 +5,8 @@ Para "en qué quedé" andá a `STATE.md`; para "qué falta", a `ROADMAP.md`.
 
 ## Qué es
 
-Sistema de **mantenimiento preventivo e inspecciones de flota**. Trabajo práctico
-integrador (TIP) de facultad, hecho por un equipo, donde todos usamos asistentes
+Sistema de **mantenimiento preventivo e inspecciones de flota**. Trabajo de
+Inserción Profesional (TIP) de facultad, hecho por un equipo, donde todos usamos asistentes
 de IA para trabajar.
 
 ## Dominio
