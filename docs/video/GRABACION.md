@@ -1,7 +1,7 @@
 # Video demo de FleetGuard — grabación y edición
 
 Cómo se prepara, se graba y se edita el video de [`GUION.md`](GUION.md). El estado de avance va en `docs/STATE.md`,
-como siempre, con `/cierre`.
+como siempre, con `/cierre`. Qué toma y qué tramo va en cada escena está en [`MONTAJE.md`](MONTAJE.md).
 
 ## Orden de trabajo
 
