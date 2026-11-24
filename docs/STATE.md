@@ -1,6 +1,6 @@
 # Estado — FleetGuard
 
-Última actualización: **2026-11-16**
+Última actualización: **2026-11-23**
 Se escribe con el ritual de `docs/guias/sesiones.md`, siempre con confirmación
 de Guido.
 
@@ -8,80 +8,74 @@ de Guido.
 
 ## Dónde estamos
 
-La Entrega 3 está entregada: Tomás pasó `develop` a `main` el 15/11 y le puso el tag `v1.3.0-entrega-3` en los dos
-repos. Las cuatro cards de Guido del Sprint 10 (CAM-141, 142, 143 y 149) entraron a `develop` el 13/11. Las de Tomás
-(CAM-150, 156, 157 y 159) entraron entre el 13/11 y el 16/11. En Jira hay un sprint nuevo, "Sprint 10 - Entrega 4",
-todavía sin iniciar.
+La Entrega 3 está entregada (`v1.3.0-entrega-3`) y el proyecto pasó a enfocarse en el **video de demo de unos 5
+minutos** para la presentación. La voz ya está grabada y queda como toma final. El guion, el seed y el ensayo en la
+app están listos. Falta grabar las pantallas, el logo provisorio, la música y la edición en CapCut.
 
 ## En qué quedé
 
-- **CAM-141 y CAM-142:** quedaron como estaban en el cierre del 12/11:
-  - **CAM-141:** `defect_resolved`, sin aviso doble con `vehicle_available`;
-  - **CAM-142:** `unattendedDays`, la tarea diaria `defect_unattended`, la marca, el filtro en la URL y el contador
-    del Resumen.
-  - CAM-159 no tocó sus archivos del backend. En el front cambió `App.css` y `dashboard.css`, pero las clases y el
-    filtro siguen.
-- **CAM-143 (avisar el turno de taller al chofer), hecha el 12/11 en otra sesión:**
-  - **Backend:**
-    - un aviso diario `scheduled_maintenance_upcoming` al chofer que tiene el vehículo en viaje, si el turno de taller
-      es hoy o mañana, una vez por turno y fecha;
-    - `trip_started_with_maintenance` al admin si el vehículo sale de viaje con turno ese día;
-    - `scheduledToday` en `GET /api/vehicles`.
-  - **Frontend:** la marca "Turno de taller hoy" en la lista del chofer, y "¿Salís igual?" antes del pre-viaje, tanto
-    por la lista como por el QR.
-- **CAM-149 (comentarios en la OT), hecha el 13/11 en otra sesión:**
-  - **Backend:**
-    - `GET` y `POST /api/work-orders/{id}/comments`, con JWT. Otro técnico recibe 403 y una OT cerrada da 409;
-    - el aviso `work_order_comment`: del técnico a los configurados y del admin al técnico, nunca al autor.
-  - **Frontend:**
-    - la sección Comentarios en el detalle de la OT del admin y en la pantalla del técnico, con dictado. En
-      computadora, Enter envía y Ctrl+Enter es salto de línea;
-    - la campanita del técnico abre la OT del aviso si sigue siendo suya.
-- **Integración:**
-  - Guido mergeó la release (#27 y fe#35) el 13/11, después de los PRs de Tomás (#28 y fe#36). Tomás había mergeado
-    `develop` en la release para resolver los conflictos.
-  - **CAM-159 de Tomás (#29 y fe#37), el 16/11:**
-    - "Cubiertas" pasa a "Neumáticos", y `/vehiculos/cubiertas` redirige a `/vehiculos/neumaticos`;
-    - se puede quitar una plantilla de checklist de los vehículos;
-    - checklist del remolque en el pre-viaje;
-    - post-viaje configurable por vehículo y en plantillas;
-    - paleta v2 del front.
-- **CI:** el del backend volvió a correr en verde desde el 13/11, en `develop`, `main` y el PR de CAM-159, así que el
-  bloqueo de facturación se resolvió. El frontend no tiene CI.
-- **Jira:**
-  - "Sprint 10 - Entrega 3" se cerró el 14/11, con sus 8 cards finalizadas dentro del sprint.
-  - **El sprint 76, "Sprint 10 - Entrega 4", está sin iniciar** y ya tiene 4 cards "En curso":
-    - CAM-160, de Guido: "Cubiertas" a "Neumáticos";
-    - CAM-161, de Tomás: sección para remolques;
-    - CAM-162, de Tomás: quitar un vehículo de una plantilla. No tiene descripción;
-    - CAM-163, de Guido: "Cambiar UI".
-- **Revisión del 16/11, de solo lectura:** se cruzaron git, los PRs, el CI y Jira. No se tocó código.
-- **Datos de prueba:** siguen los del 12/11: "giro" en ZZ137AA, los avisos de prueba y los 6 defectos ya anotados como
-  avisados.
+- **Guion:** `docs/video/GUION.md` (v0.4), con 15 escenas en una sola historia:
+  - Carlos reporta una pérdida de aceite bloqueante en el Volvo AF638RB;
+  - el admin la planifica y se la asigna a Javier;
+  - Javier la resuelve y Carlos vuelve a salir;
+  - al final, un repaso rápido del resto de la app.
+
+  El archivo también tiene el cronometraje de los dos borradores de voz, la transcripción del borrador 2 y el ensayo
+  escena por escena. Las reglas del guion:
+  - tono neutro, de "ustedes";
+  - sin subtítulos, solo palabras clave en pantalla;
+  - palabras como "dashboard" y "modal" van, porque el público son en buena parte programadores.
+- **Guía de grabación:** `docs/video/GRABACION.md`, con la preparación del día de grabación, la captura, la locución,
+  la edición en CapCut y el análisis del video de miTVU, que tiene casi un minuto sin app, un cambio de imagen cada
+  2,6 s y la música cargada en los graves.
+- **Voz:** el borrador 2 (micrófono bueno, 4:51) queda como **toma final, sin regrabar nada**. Lo medido:
+  - ritmo de 2,0 palabras por segundo, prácticamente el de la referencia;
+  - tono y volumen parejos de punta a punta;
+  - ruido de fondo en -62 dB.
+
+  Con el logo, los carteles y las pausas con música, el video da unos 5:05 a 5:10.
+- **Seed del video:** `docs/db/seed-video.sql`, en la rama `feature/video-demo` del backend (`a3a0757`, pusheada, sin
+  PR). Se corre después de `seed-demo.sql` y deja:
+  - a Carlos sin viaje abierto;
+  - a Javier sin órdenes abiertas;
+  - las campanitas limpias.
+
+  Después del ensayo le sumé dos pasos, **todavía sin probar**:
+  - borra los avisos viejos del admin;
+  - marca como ya avisados los vencimientos de mantenimiento, para que el aviso del defecto salga primero.
+- **Ensayo (23/11):** la historia completa funciona. Lo que hay que saber para grabar quedó en `GUION.md`, sección
+  "Ensayo":
+  - en la escena 9, tocar el aviso no abre la orden, y así está hecho;
+  - en la escena 11, el cierre no pide km y dice "mantenimiento": queda así, decidido con Guido;
+  - en la escena 8, la fecha tiene que quedar en el futuro.
+
+  La base local quedó con los datos del ensayo.
+- **CapCut:**
+  - no hay conector, pero la versión 9.4 guarda los proyectos como JSON legible;
+  - Computer use ya está disponible desde el 18/11, todavía sin usar con CapCut.
 - **Repos:**
-  - en local los dos están en `develop`: 2 commits atrás en el backend y 1 en el frontend, por CAM-159;
-  - en el backend sigue `.idea/misc.xml` sin commitear.
+  - `TIP - IA`: commit `8d10627` en `master`, pusheado;
+  - backend parado en `feature/video-demo` (el código es igual al de `develop`), con `.idea/misc.xml` sin
+    commitear;
+  - frontend en `develop`, al día.
 
 ## Qué sigue
 
-- **Antes de arrancar:**
-  - actualizar `develop` en los dos repos, con `npm install` por si CAM-159 sumó dependencias;
-  - correr `./gradlew build` y `npm run build`;
-  - reiniciar el backend de IntelliJ.
-- **Aclarar con Tomás el sprint nuevo antes de tocarlo:**
-  - CAM-160 y CAM-162 ya parecen hechas por CAM-159: en `develop` ya dice "Neumáticos" y ya existe quitar una
-    plantilla;
-  - CAM-161 y CAM-163 pueden estar cubiertas en parte, por el checklist del remolque y la paleta v2;
-  - **el inicio del sprint:** iniciarlo antes de cerrar cualquier card, para que no se repita lo del 11/11. Y revisar
-    el nombre, que vuelve a decir "Sprint 10".
-- **Avisarle a Tomás:**
-  - su base necesita borrar los CHECK de enums, o correr el seed. Ya son `inspections_type_check`,
-    `notifications_type_check` y `notification_settings_type_check`;
-  - los tipos de aviso nuevos de CAM-142, 143, 149, 156 y 157 chocan con esos CHECK.
-- **Limpiar los datos de prueba:** "giro" en ZZ137AA y los de antes.
-- **Deuda:**
-  - un turno vencido sin hacer cuenta como atención en CAM-142, como el del ABS (AD556HX) del 16/10;
-  - y la de antes:
+- **El día de grabar, después de las 8:15:**
+  - con el backend apagado, correr `seed-demo.sql` y después `seed-video.sql`, con `psql` por ruta completa y
+    `$env:PGCLIENTENCODING = "UTF8"`. El resultado tiene que decir "listo para grabar";
+  - permitir las notificaciones de `localhost:5173` en Chrome y poner Windows en "No molestar";
+  - grabar las pantallas siguiendo la voz del borrador 2, escena por escena.
+- **Logo provisorio** para la apertura y el cierre, en SVG con los colores de la app.
+- **Música:** instrumental, sin voces y con graves, de la biblioteca de CapCut.
+- **Edición en CapCut:** probar Computer use y la escritura del JSON en un proyecto de prueba antes de tocar el del
+  video.
+- **Siguen de antes:**
+  - aclarar con Tomás el sprint 76 y las cards CAM-160 a 163. CAM-163 está desactualizada y la UI no va a cambiar;
+  - avisarle a Tomás lo de los CHECK de enums: su base necesita borrarlos o correr el seed
+    (`inspections_type_check`, `notifications_type_check` y `notification_settings_type_check`);
+  - la deuda:
+    - un turno vencido sin hacer cuenta como atención en CAM-142, como el del ABS (AD556HX) del 16/10;
     - el km del post-viaje sin tope;
     - la foto de `DefectFields`;
     - el texto de CAM-152;
@@ -96,21 +90,28 @@ todavía sin iniciar.
 
 ## Decisiones abiertas
 
-- **Nueva:** qué hacer con CAM-160, 161, 162 y 163 si CAM-159 ya las cubre (cerrarlas, redefinirlas o reemplazarlas),
-  y el nombre y el inicio del sprint 76.
-- **Pendientes de confirmar con Tomás:**
-  - **de CAM-141:** si se apaga "Vehículo disponible" y queda prendido "Defecto resuelto", el chofer no recibe ninguno
-    de los dos;
-  - **de CAM-142:**
-    - una OT en espera cuenta como atención;
-    - bloqueantes y no bloqueantes tienen el mismo plazo;
-    - se avisa una sola vez;
-    - un turno vencido cuenta como atención;
-  - **las de antes:** CAM-139, CAM-137, CAM-152, CAM-148 y CAM-140.
-- **Resueltas:**
-  - **el tag de las entregas:** `v1.3.0-entrega-3`. La 4 todavía no tiene;
-  - **el CI bloqueado por facturación:** ya corre.
+- **Nuevas:**
+  - el logo definitivo, a charlar con Tomás;
+  - si `seed-video.sql` entra a `develop` con un PR o queda en su rama.
+- **Resueltas en esta sesión:**
+  - grabar sobre `develop`, con la UI actual;
+  - tono neutro, sin subtítulos y sin publicar en YouTube;
+  - música libre de derechos;
+  - el QR no se escanea en cámara, se muestra en el detalle del vehículo;
+  - los nombres del seed (Carlos y Javier);
+  - "dashboard" y "modal" se quedan;
+  - la escena 11 queda como está.
 - **Siguen de antes:**
+  - qué hacer con CAM-160, 161, 162 y 163 si CAM-159 ya las cubre, y el nombre y el inicio del sprint 76;
+  - **pendientes de confirmar con Tomás:**
+    - **de CAM-141:** si se apaga "Vehículo disponible" y queda prendido "Defecto resuelto", el chofer no recibe
+      ninguno de los dos;
+    - **de CAM-142:**
+      - una OT en espera cuenta como atención;
+      - bloqueantes y no bloqueantes tienen el mismo plazo;
+      - se avisa una sola vez;
+      - un turno vencido cuenta como atención;
+    - **las de antes:** CAM-139, CAM-137, CAM-152, CAM-148 y CAM-140.
   - CAM-134 contra las pausas y el viaje;
   - la fecha de la entrega;
   - Node 22 en el CI, y que el frontend no tiene CI;
@@ -555,6 +556,25 @@ Lo que se probó y no funcionó, con el motivo. Se agrega, no se reemplaza.
   `/cierre`, y Tomás tagueó la entrega y abrió un sprint nuevo. Se reconstruyó como el 2026-09-11: `git fetch`,
   `gh pr list` y `gh run list` en los dos repos, y JQL `project = CAM AND updated >= <fecha>`. Si una sesión hace
   cards, conviene cerrarla con `/cierre` aunque sea corta.
+- **2026-11-16** — Remote Control no le da a Claude control de la pantalla: sirve para seguir la sesión desde otro
+  dispositivo. Para manejar programas hace falta Computer use, que, activado a mitad de la sesión, recién apareció en
+  una sesión posterior.
+- **2026-11-18** — `py -m http.server` no acepta pedidos de rango, así que un `<video>` servido ahí no puede saltar a
+  otro momento (`currentTime` queda en 0). Se resolvió bajando el archivo entero como blob y usando
+  `URL.createObjectURL`. Además, con el panel del navegador oculto, `requestVideoFrameCallback` nunca dispara: hay
+  que usar `seeked` con un `setTimeout`.
+- **2026-11-23** — Claude propuso regrabar tres frases por lo que mostraba la transcripción automática, y no hacía
+  falta: la escena 11 estaba completa, y "hoy día" en realidad era "y día". Ante una transcripción automática,
+  confirmar con Guido antes de dar por hecho que algo está mal dicho.
+- **2026-11-23** — Repetición del callejón del 2026-09-03: `psql` no está en el PATH. Se usa
+  `& "C:\Program Files\PostgreSQL\16\bin\psql.exe"`, con `$env:PGCLIENTENCODING = "UTF8"` para los acentos.
+- **2026-11-23** — El navegador de la sesión no tiene selector de archivos. Para probar una foto, se armó un `File`
+  desde `/api/photos/<nombre>` y se cargó en el `input` con `DataTransfer`.
+- **2026-11-23** — `seed-demo.sql` no borra los avisos del admin de pruebas anteriores ni `maintenance_alert_log`. Por
+  eso el km del pre-viaje disparó un "Mantenimiento por vencer" que tapó el aviso del defecto. Lo cubre
+  `seed-video.sql`.
+- **2026-11-23** — Planificar con una hora que ya pasó da "Datos inválidos para programar el mantenimiento", un
+  mensaje poco claro.
 
 ## Historial
 
@@ -821,3 +841,7 @@ Una línea por sesión.
 - **2026-11-16** — Revisión de solo lectura de git, PRs, CI y Jira. La Entrega 3 está en `main` con
   `v1.3.0-entrega-3`, el CI volvió a andar y Tomás integró CAM-150, 156, 157 y 159. El sprint nuevo de Jira tiene
   cards que CAM-159 parece cubrir ya.
+- **2026-11-16/23** — Foco en el video de demo: guion en `docs/video/GUION.md` (v0.4, 15 escenas) y guía de
+  grabación; análisis del video de miTVU (audio y cuadros) y medición de dos borradores de voz (el 2, de 4:51, queda
+  como toma final); `seed-video.sql` en `feature/video-demo` y ensayo completo en la app. Commits `8d10627` (IA) y
+  `a3a0757` (backend), pusheados.
